@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notion 聊天助手</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">
+            <h1>Notion 聊天助手</h1>
+            <div class="status-indicator" id="statusIndicator">
+                <span class="status-dot"></span>
+                <span id="statusText">準備就緒</span>
+            </div>
+        </div>
+        
+        <div class="chat-messages" id="chatMessages">
+            <div class="message bot-message">
+                <div class="message-content">
+                    <p>您好！我可以幫您搜尋 Notion 中的筆記。請輸入您想要查找的內容。</p>
+                </div>
+                <div class="message-time" id="welcomeTime"></div>
+            </div>
+        </div>
+        
+        <div class="chat-input-container">
+            <div class="input-wrapper">
+                <input 
+                    type="text" 
+                    id="messageInput" 
+                    placeholder="輸入您的問題..."
+                    autocomplete="off"
+                >
+                <button id="sendButton" class="send-button">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                        <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" fill="currentColor"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="renderer.js"></script>
+</body>
+</html>
