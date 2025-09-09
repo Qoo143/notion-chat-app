@@ -1,24 +1,22 @@
 const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
 const axios = require('axios');
+const config = require('../config');
 
 let mainWindow;
 
 function createWindow() {
   mainWindow = new BrowserWindow({
-    width: 800,
-    height: 600,
-    webPreferences: {
-      nodeIntegration: true,
-      contextIsolation: false
-    },
+    width: config.app.window.width,
+    height: config.app.window.height,
+    webPreferences: config.app.window.webPreferences,
     icon: path.join(__dirname, 'assets', 'icon.png') // 可選
   });
 
   mainWindow.loadFile(path.join(__dirname, 'renderer', 'index.html'));
 
   // 開發模式下開啟開發者工具
-  if (process.env.NODE_ENV === 'development') {
+  if (process.env.NODE_ENV === 'development' && config.app.development.openDevTools) {
     mainWindow.webContents.openDevTools();
   }
 }
@@ -26,7 +24,7 @@ function createWindow() {
 // 處理聊天請求
 ipcMain.handle('send-message', async (event, message) => {
   try {
-    const response = await axios.post('http://localhost:3002/chat', {
+    const response = await axios.post(`${config.server.apiBaseUrl}/chat`, {
       message: message
     });
     
