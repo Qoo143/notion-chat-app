@@ -362,6 +362,40 @@ body {
     color: rgba(255, 255, 255, 0.8);
 }
 
+/* API 統計資訊樣式 */
+.message-content .api-stats {
+    margin-top: 15px;
+    padding: 12px 15px;
+    background: #f8f9ff;
+    border: 1px solid #e1e8ff;
+    border-radius: 8px;
+    font-size: 0.9em;
+    color: #4a5568;
+}
+
+.message-content .api-stats .stats-title {
+    font-weight: bold;
+    color: #2d3748;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.message-content .api-stats .stats-item {
+    margin: 4px 0;
+    padding-left: 16px;
+    position: relative;
+}
+
+.message-content .api-stats .stats-item::before {
+    content: "•";
+    position: absolute;
+    left: 0;
+    color: #667eea;
+    font-weight: bold;
+}
+
 /* 響應式設計 */
 @media (max-width: 768px) {
     .chat-container {

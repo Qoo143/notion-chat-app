@@ -87,7 +87,25 @@ class ChatApp {
             
             if (result.success) {
                 // 顯示回覆
-                this.addMessage(result.data.response, 'bot');
+                let messageContent = result.data.response;
+                
+                // 如果有API統計資訊，添加到回覆末尾
+                if (result.data.apiStats) {
+                    const stats = result.data.apiStats;
+                    messageContent += `\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
+                    messageContent += `📊 **API 調用統計**\n`;
+                    messageContent += `• Notion API: ${stats.notionCalls} 次\n`;
+                    messageContent += `• Gemini AI: ${stats.geminiCalls} 次\n`;
+                    messageContent += `• 總調用次數: ${stats.totalCalls} 次\n`;
+                    messageContent += `• 處理時間: ${stats.duration} 秒`;
+                    
+                    // 如果有輪數資訊，也顯示
+                    if (result.data.rounds && Array.isArray(result.data.rounds)) {
+                        messageContent += `\n• 搜索輪數: ${result.data.rounds.length} 輪`;
+                    }
+                }
+                
+                this.addMessage(messageContent, 'bot');
                 this.updateStatus('ready', '已連線');
             } else {
                 // 顯示錯誤
