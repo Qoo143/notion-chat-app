@@ -22,11 +22,14 @@ function createWindow() {
 }
 
 // 處理聊天請求
-ipcMain.handle('send-message', async (event, message) => {
+ipcMain.handle('send-message', async (event, messageData) => {
   try {
-    const response = await axios.post(`${config.server.apiBaseUrl}/chat`, {
-      message: message
-    });
+    // 支援新舊兩種格式
+    const requestData = typeof messageData === 'string' 
+      ? { message: messageData }
+      : { message: messageData.message, maxRounds: messageData.maxRounds };
+    
+    const response = await axios.post(`${config.server.apiBaseUrl}/chat`, requestData);
     
     return {
       success: true,

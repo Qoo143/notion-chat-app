@@ -164,9 +164,6 @@ class GeminiAPIManager {
 // 初始化 Gemini API 管理器
 const geminiManager = new GeminiAPIManager();
 
-// 存儲最近的搜尋結果（簡單的會話記憶）
-let lastSearchResults = [];
-
 // 使用 Gemini 智能分析用戶意圖和搜尋需求
 async function analyzeUserIntentWithGemini(message, apiCounter) {
   try {
@@ -182,20 +179,32 @@ async function analyzeUserIntentWithGemini(message, apiCounter) {
   "searchKeywords": ["關鍵詞1", "關鍵詞2", ...] (如果 needSearch 為 true)
 }
 
+⚠️ **重要：Notion API 搜尋機制**
+- 只搜尋頁面和資料庫的「標題」，不是內容全文搜尋
+- 使用簡單的子字串匹配，不支援語意搜尋
+- 搜尋關鍵詞必須可能出現在標題中才有效
+
 判斷規則：
 1. 如果是問候語（你好、hi、hello等），設定 intentType 為 "greeting"，needSearch 為 false
-2. 如果用戶想查找特定資料、筆記、文件，設定 needSearch 為 true，intentType 為 "search"，並提供多個相關搜尋關鍵詞
+2. 如果用戶想查找特定資料、筆記、文件，設定 needSearch 為 true，intentType 為 "search"，並提供標題相關的搜尋關鍵詞
 3. 如果是一般對話、問題解答，設定 needSearch 為 false，intentType 為 "chat"
+
+**關鍵詞生成策略（專注標題匹配）：**
+- 選擇用戶常在標題中使用的詞彙
+- 包含技術名稱、專案名稱、主題關鍵詞
+- 避免動詞、介詞等不太出現在標題中的詞
+- 考慮常見命名慣例（如：筆記、學習、教學、專案等）
 
 範例：
 - 「你好」→ {"needSearch": false, "intentType": "greeting"}
 - 「今天天氣如何」→ {"needSearch": false, "intentType": "chat"}
-- 「幫我找安全相關筆記」→ {"needSearch": true, "intentType": "search", "searchKeywords": ["安全", "資安", "security"]}
-- 「有沒有關於 Python 的資料」→ {"needSearch": true, "intentType": "search", "searchKeywords": ["Python", "程式", "編程"]}
-- 「我要找promise的notion筆記」→ {"needSearch": true, "intentType": "search", "searchKeywords": ["Promise", "JavaScript", "異步"]}
-- 「找react相關的資料」→ {"needSearch": true, "intentType": "search", "searchKeywords": ["React", "組件", "JSX"]}
+- 「幫我找安全相關筆記」→ {"needSearch": true, "intentType": "search", "searchKeywords": ["安全", "資安", "筆記"]}
+- 「有沒有關於 Python 的資料」→ {"needSearch": true, "intentType": "search", "searchKeywords": ["Python", "程式", "教學"]}
+- 「我要找promise的notion筆記」→ {"needSearch": true, "intentType": "search", "searchKeywords": ["Promise", "JavaScript", "筆記"]}
+- 「找react相關的資料」→ {"needSearch": true, "intentType": "search", "searchKeywords": ["React", "前端", "開發"]}
+- 「昨天的會議記錄在哪」→ {"needSearch": true, "intentType": "search", "searchKeywords": ["會議", "記錄", "Meeting"]}
 
-重要：searchKeywords 陣列最多包含 3 個關鍵詞，選擇最核心和最相關的詞彙。
+重要：searchKeywords 陣列最多包含 3 個關鍵詞，選擇最可能出現在標題中的詞彙。
 
 只回覆 JSON，不要其他文字。
 `;
@@ -321,6 +330,9 @@ function parseGeminiJSON(responseText, fallbackValue = null) {
 }
 
 // 聊天端點
+// 支援的請求參數：
+// - message: 用戶訊息（必填）
+// - maxRounds: 最大搜索輪數，1-3 之間（可選，預設使用配置檔案的值）
 app.post('/chat', async (req, res) => {
   const apiCounter = new APICounter();
 
@@ -351,10 +363,11 @@ app.post('/chat', async (req, res) => {
       });
 
     } else if (intent.needSearch && intent.searchKeywords && intent.searchKeywords.length > 0) {
-      // 需要搜尋 Notion - 使用三輪循環策略
-      console.log(`執行三輪循環搜尋，關鍵詞: ${intent.searchKeywords.join(', ')}`);
+      // 需要搜尋 Notion - 使用動態循環策略
+      const maxRounds = Math.min(req.body.maxRounds || config.gemini.search.rounds, 3); // 預設使用配置值，最多3輪
+      console.log(`執行${maxRounds}輪循環搜尋，關鍵詞: ${intent.searchKeywords.join(', ')}`);
 
-      const searchResult = await threeRoundSearch(message, intent.searchKeywords, apiCounter);
+      const searchResult = await dynamicRoundSearch(message, intent.searchKeywords, maxRounds, apiCounter);
 
       if (searchResult.success) {
         res.json({
@@ -364,6 +377,8 @@ app.post('/chat', async (req, res) => {
           searchResults: searchResult.foundPages,
           searchKeywords: intent.searchKeywords,
           rounds: searchResult.rounds,
+          maxRounds: maxRounds,
+          actualRounds: searchResult.rounds.length,
           apiStats: apiCounter.getStats()
         });
       } else {
@@ -374,6 +389,8 @@ app.post('/chat', async (req, res) => {
           searchResults: [],
           searchKeywords: intent.searchKeywords,
           rounds: searchResult.rounds,
+          maxRounds: maxRounds,
+          actualRounds: searchResult.rounds.length,
           apiStats: apiCounter.getStats()
         });
       }
@@ -414,64 +431,49 @@ app.post('/chat', async (req, res) => {
   }
 });
 
-// 三輪循環搜索主函數
-async function threeRoundSearch(userMessage, initialKeywords, apiCounter) {
-  console.log('🚀 開始三輪循環搜索策略');
+// 動態循環搜索主函數
+async function dynamicRoundSearch(userMessage, initialKeywords, maxRounds, apiCounter) {
+  console.log(`🚀 開始${maxRounds}輪循環搜索策略`);
 
   const rounds = [];
   let foundSuitableContent = false;
   let finalResponse = '';
   let finalFoundPages = [];
 
-  // 第一輪：原始關鍵詞
-  console.log('\n📍 第一輪搜索 - 使用原始關鍵詞');
-  const round1Result = await executeSingleSearchRound(userMessage, initialKeywords, 1, apiCounter);
-  rounds.push(round1Result);
+  let currentKeywords = initialKeywords;
 
-  if (round1Result.suitable) {
-    console.log('✅ 第一輪找到合適內容，結束搜索');
-    return {
-      success: true,
-      response: round1Result.response,
-      foundPages: round1Result.pages,
-      rounds: rounds
-    };
+  // 動態執行指定輪數的搜索
+  for (let roundNumber = 1; roundNumber <= maxRounds; roundNumber++) {
+    console.log(`\n📍 第${roundNumber}輪搜索`);
+    
+    // 根據輪數決定關鍵詞策略
+    if (roundNumber === 1) {
+      console.log('使用原始關鍵詞');
+      currentKeywords = initialKeywords;
+    } else if (roundNumber === 2) {
+      console.log('優化關鍵詞');
+      currentKeywords = await generateOptimizedKeywords(userMessage, initialKeywords, 'optimize', apiCounter);
+    } else if (roundNumber === 3) {
+      console.log('擴展關鍵詞');
+      currentKeywords = await generateOptimizedKeywords(userMessage, initialKeywords, 'expand', apiCounter);
+    }
+
+    const roundResult = await executeSingleSearchRound(userMessage, currentKeywords, roundNumber, apiCounter);
+    rounds.push(roundResult);
+
+    if (roundResult.suitable) {
+      console.log(`✅ 第${roundNumber}輪找到合適內容，結束搜索`);
+      return {
+        success: true,
+        response: roundResult.response,
+        foundPages: roundResult.pages,
+        rounds: rounds
+      };
+    }
   }
 
-  // 第二輪：優化關鍵詞
-  console.log('\n📍 第二輪搜索 - 優化關鍵詞');
-  const optimizedKeywords = await generateOptimizedKeywords(userMessage, initialKeywords, 'optimize', apiCounter);
-  const round2Result = await executeSingleSearchRound(userMessage, optimizedKeywords, 2, apiCounter);
-  rounds.push(round2Result);
-
-  if (round2Result.suitable) {
-    console.log('✅ 第二輪找到合適內容，結束搜索');
-    return {
-      success: true,
-      response: round2Result.response,
-      foundPages: round2Result.pages,
-      rounds: rounds
-    };
-  }
-
-  // 第三輪：擴展關鍵詞
-  console.log('\n📍 第三輪搜索 - 擴展關鍵詞');
-  const expandedKeywords = await generateOptimizedKeywords(userMessage, initialKeywords, 'expand', apiCounter);
-  const round3Result = await executeSingleSearchRound(userMessage, expandedKeywords, 3, apiCounter);
-  rounds.push(round3Result);
-
-  if (round3Result.suitable) {
-    console.log('✅ 第三輪找到合適內容，結束搜索');
-    return {
-      success: true,
-      response: round3Result.response,
-      foundPages: round3Result.pages,
-      rounds: rounds
-    };
-  }
-
-  // 三輪都沒有找到合適內容
-  console.log('❌ 三輪搜索都沒有找到合適的內容');
+  // 所有輪次都沒有找到合適內容
+  console.log(`❌ ${maxRounds}輪搜索都沒有找到合適的內容`);
   return {
     success: false,
     response: generateFailureResponse(userMessage, rounds),
@@ -731,17 +733,28 @@ async function generateOptimizedKeywords(userMessage, currentKeywords, mode, api
 
 第一輪搜索沒有找到合適內容。請優化關鍵詞，提供更精確的搜索詞。
 
+⚠️ **重要：Notion API 搜尋限制**
+- 只搜尋頁面標題，不搜尋內容
+- 關鍵詞必須可能出現在標題中
+- 優先選擇名詞、技術術語、專案名稱
+
 請以JSON格式回覆：
 {
   "keywords": ["優化關鍵詞1", "優化關鍵詞2", "優化關鍵詞3"]
 }
 
-重要：只提供 3 個最核心、最相關的關鍵詞。
+**標題導向優化策略：**
+- 替換為更常見的標題用詞
+- 考慮技術縮寫和全名
+- 包含分類詞（如：筆記、文檔、專案、學習）
+- 使用同義但更簡潔的術語
+- 考慮中英文混用（常見於技術標題）
 
-優化策略：
-- 使用同義詞和相關術語
-- 調整關鍵詞的具體程度
-- 考慮不同的表達方式
+範例優化：
+- 「異步處理」→ 「Promise」、「async」、「非同步」
+- 「前端框架」→ 「React」、「Vue」、「Angular」  
+- 「資料庫」→ 「MySQL」、「MongoDB」、「Database」
+- 「機器學習」→ 「ML」、「AI」、「深度學習」
 
 只回覆JSON，不要其他文字。
 ` : `
@@ -750,18 +763,27 @@ async function generateOptimizedKeywords(userMessage, currentKeywords, mode, api
 
 前兩輪搜索都沒有找到合適內容。請擴展關鍵詞範圍，提供更廣泛的搜索詞。
 
+⚠️ **重要：Notion API 搜尋限制**
+- 只搜尋頁面標題，不搜尋內容
+- 擴展關鍵詞仍需可能出現在標題中
+
 請以JSON格式回覆：
 {
   "keywords": ["擴展關鍵詞1", "擴展關鍵詞2", "擴展關鍵詞3"]
 }
 
-重要：只提供 3 個最相關的擴展關鍵詞。
+**標題導向擴展策略：**
+- 使用更廣泛的上位詞（如：「React」→「前端」→「開發」）
+- 包含相關工具和技術
+- 添加時間相關詞（如：「2024」、「新版」、「最新」）
+- 考慮學習和工作場景詞彙
+- 嘗試常見標題模式詞
 
-擴展策略：
-- 使用更廣泛的類別詞
-- 包含相關領域的術語  
-- 嘗試不同語言（中英文）
-- 考慮上下位概念
+範例擴展：
+- 「Python」→ 「程式設計」、「開發」、「coding」
+- 「安全」→ 「網路安全」、「資安」、「Security」
+- 「專案管理」→ 「管理」、「Project」、「規劃」
+- 「設計模式」→ 「軟體工程」、「架構」、「Pattern」
 
 只回覆JSON，不要其他文字。
 `;
@@ -849,7 +871,8 @@ ${aggregatedContent}
 
 // 生成搜索失敗回覆
 function generateFailureResponse(userMessage, rounds) {
-  let response = `抱歉，經過三輪搜索都沒有找到與「${userMessage}」相關的合適內容。\n\n`;
+  const roundCount = rounds.length;
+  let response = `抱歉，經過${roundCount}輪搜索都沒有找到與「${userMessage}」相關的合適內容。\n\n`;
 
   response += `🔍 **搜索記錄：**\n`;
   rounds.forEach(round => {

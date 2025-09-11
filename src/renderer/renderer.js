@@ -7,6 +7,8 @@ class ChatApp {
         this.chatMessages = document.getElementById('chatMessages');
         this.statusIndicator = document.getElementById('statusIndicator');
         this.statusText = document.getElementById('statusText');
+        this.searchModeSelect = document.getElementById('searchModeSelect');
+        this.costIndicator = document.getElementById('costIndicator');
         
         this.init();
     }
@@ -27,6 +29,9 @@ class ChatApp {
         // 自動聚焦到輸入框
         this.messageInput.focus();
         
+        // 初始化搜尋模式選擇器
+        this.initSearchModeSelector();
+        
         // 檢查伺服器狀態
         this.checkServerStatus();
     }
@@ -45,6 +50,29 @@ class ChatApp {
             this.updateStatus('error', '伺服器離線');
             console.error('伺服器連線檢查失敗:', error);
         }
+    }
+
+    initSearchModeSelector() {
+        // 監聽搜尋模式變更
+        this.searchModeSelect.addEventListener('change', () => {
+            this.updateCostIndicator();
+        });
+        
+        // 初始化成本指示器
+        this.updateCostIndicator();
+    }
+    
+    updateCostIndicator() {
+        const mode = parseInt(this.searchModeSelect.value);
+        const costMap = {
+            1: { text: '🟢 低成本', class: 'cost-low' },
+            2: { text: '🟡 中成本', class: 'cost-medium' },
+            3: { text: '🔴 高成本', class: 'cost-high' }
+        };
+        
+        const costInfo = costMap[mode];
+        this.costIndicator.textContent = costInfo.text;
+        this.costIndicator.className = `cost-indicator ${costInfo.class}`;
     }
 
     updateStatus(status, text) {
@@ -79,8 +107,11 @@ class ChatApp {
         this.updateStatus('connecting', '處理中...');
 
         try {
-            // 發送到後端
-            const result = await ipcRenderer.invoke('send-message', message);
+            // 獲取當前搜尋模式
+            const maxRounds = parseInt(this.searchModeSelect.value);
+            
+            // 發送到後端（包含搜尋模式參數）
+            const result = await ipcRenderer.invoke('send-message', { message, maxRounds });
             
             // 移除載入訊息
             this.removeMessage(loadingMessage);
@@ -92,7 +123,7 @@ class ChatApp {
                 // 如果有API統計資訊，添加到回覆末尾
                 if (result.data.apiStats) {
                     const stats = result.data.apiStats;
-                    messageContent += `\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
+                    messageContent += `\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
                     messageContent += `📊 **API 調用統計**\n`;
                     messageContent += `• Notion API: ${stats.notionCalls} 次\n`;
                     messageContent += `• Gemini AI: ${stats.geminiCalls} 次\n`;
@@ -101,7 +132,10 @@ class ChatApp {
                     
                     // 如果有輪數資訊，也顯示
                     if (result.data.rounds && Array.isArray(result.data.rounds)) {
-                        messageContent += `\n• 搜索輪數: ${result.data.rounds.length} 輪`;
+                        const maxRounds = result.data.maxRounds || '未知';
+                        const actualRounds = result.data.actualRounds || result.data.rounds.length;
+                        messageContent += `\n• 搜索設定: ${maxRounds} 輪最大`;
+                        messageContent += `\n• 實際執行: ${actualRounds} 輪`;
                     }
                 }
                 
@@ -229,6 +263,7 @@ class ChatApp {
     toggleInputs(enabled) {
         this.messageInput.disabled = !enabled;
         this.sendButton.disabled = !enabled;
+        this.searchModeSelect.disabled = !enabled;
     }
 
     formatTime(date) {

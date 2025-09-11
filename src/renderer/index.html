@@ -9,7 +9,18 @@
 <body>
     <div class="chat-container">
         <div class="chat-header">
-            <h1>Notion 聊天助手</h1>
+            <div class="header-left">
+                <h1>Notion 聊天助手</h1>
+                <div class="search-mode-selector">
+                    <label for="searchModeSelect" class="mode-label">搜尋模式：</label>
+                    <select id="searchModeSelect" class="mode-select">
+                        <option value="1" selected>單循環 (快速)</option>
+                        <option value="2">雙循環 (平衡)</option>
+                        <option value="3">三循環 (精確)</option>
+                    </select>
+                    <span class="cost-indicator" id="costIndicator">🟢 低成本</span>
+                </div>
+            </div>
             <div class="status-indicator" id="statusIndicator">
                 <span class="status-dot"></span>
                 <span id="statusText">準備就緒</span>

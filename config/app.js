@@ -3,7 +3,7 @@ module.exports = {
   // Electron 主視窗設定
   window: {
     width: 800,
-    height: 600,
+    height: 800,
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false
