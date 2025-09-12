@@ -1,323 +1,413 @@
 # Notion Chat App
 
-一個整合 Notion API 和 Google Gemini AI 的智能桌面聊天應用程式。用戶可以透過自然語言搜尋他們的 Notion 工作區，並獲得 AI 驅動的回應。
+> 🤖 AI 驅動的 Notion 知識庫聊天助手
+> 
+> 使用 Electron + Gemini AI + Notion API 構建的桌面聊天應用，讓你的 Notion 工作區變成智能對話夥伴
 
-![License](https://img.shields.io/badge/license-MIT-green)
-![Node.js](https://img.shields.io/badge/Node.js-18%2B-brightgreen)
-![Electron](https://img.shields.io/badge/Electron-Latest-blue)
+[![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](https://github.com/user/notion-chat-app)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![Node](https://img.shields.io/badge/node-%3E%3D16.0.0-brightgreen.svg)](https://nodejs.org)
+[![Electron](https://img.shields.io/badge/electron-27.0.0-9feaf9.svg)](https://electronjs.org)
 
-## ✨ 特色功能
+## 📖 專案概述
 
-- 🤖 **智能意圖分析** - 自動識別用戶是要搜尋、問候或一般對話
-- 🔍 **動態多輪搜索** - 支援 1-3 輪搜索策略，可自動優化和擴展關鍵詞
-- 📚 **深度內容抓取** - 遞歸讀取 Notion 頁面內容，包含子頁面和所有區塊類型
-- 🎯 **智能內容篩選** - AI 自動評估內容適用性並生成整合回覆
-- 🔄 **多 API Key 輪替** - 支援多個 Gemini API Keys 自動切換
-- 🔒 **安全設計** - 採用 Electron 安全最佳實務，禁用 Node 整合
-- 📊 **詳細統計** - 提供 API 調用統計和搜索過程透明化
+**Notion Chat App** 是一個使用 Electron 構建的桌面聊天應用程式，整合了 Notion API 和 Google Gemini AI。使用者可以透過自然語言搜尋他們的 Notion 工作區，並獲得 AI 驅動的智慧回應以及相關頁面的直接連結。
 
-## 🏗️ 技術架構
+### ✨ 核心特色
 
+- 🔍 **智慧搜尋**: 多輪搜尋策略，從快速到精確的可調節搜尋深度
+- 🧠 **意圖分析**: AI 自動分析用戶意圖 (問候/搜尋/對話)
+- 📚 **深度整合**: 完整的 Notion 頁面內容提取與格式保留
+- ⚡ **高效能**: 多 API Key 輪替，智慧錯誤處理
+- 🔒 **安全設計**: Context isolation + IPC 安全通訊
+- 🎨 **現代 UI**: 直觀的聊天介面，即時狀態回饋
+
+### 🎯 適用場景
+
+- 📝 **知識管理**: 快速搜尋大量 Notion 筆記和文件
+- 💡 **內容發現**: 透過自然語言找到相關資料
+- 🤔 **問答系統**: 對 Notion 內容進行智慧問答
+- 📊 **資料查詢**: 高效率的工作區內容檢索
+
+## 🏗 技術架構
+
+```mermaid
+graph TB
+    A[用戶輸入] --> B[Electron 渲染程序]
+    B --> C[IPC 通訊]
+    C --> D[Electron 主程序]
+    D --> E[Express API 伺服器]
+    E --> F[意圖分析系統]
+    F --> G{意圖類型}
+    G -->|greeting| H[問候處理]
+    G -->|search| I[搜尋服務]
+    G -->|chat| J[對話處理]
+    I --> K[Notion API]
+    I --> L[Gemini AI]
+    K --> M[內容提取]
+    L --> N[智慧回應]
+    M --> O[結果整合]
+    N --> O
+    O --> P[格式化回傳]
+    P --> Q[前端顯示]
 ```
-Frontend (Electron Renderer)
-    ↓ IPC 通訊 (安全的 Context Bridge)
-Main Process (Electron)
-    ↓ HTTP 請求
-Express.js API Server
-    ↓ 模組化服務層
-┌─────────────────┬─────────────────┬─────────────────┐
-│  SearchService  │ NotionService  │ GeminiService  │
-│  (搜索策略)      │ (API 整合)      │ (AI 生成)       │
-└─────────────────┴─────────────────┴─────────────────┘
-```
 
-### 核心技術棧
+### 🛠 技術堆疊
 
-- **前端**: Electron (Renderer Process) + HTML/CSS/JS
-- **後端**: Node.js + Express.js
-- **外部 API**: Notion API (@notionhq/client) + Google Gemini AI (@google/generative-ai)
-- **架構**: 模組化服務導向架構 (SOA)
+| 層級 | 技術 | 版本 | 用途 |
+|------|------|------|------|
+| **前端** | Electron | ^27.0.0 | 桌面應用框架 |
+| **後端** | Express.js | ^4.18.2 | API 伺服器 |
+| **AI** | Google Gemini | ^0.2.1 | 智慧分析與回應 |
+| **API** | Notion Client | ^2.2.13 | 工作區數據存取 |
+| **工具** | Axios | ^1.6.0 | HTTP 客戶端 |
+| **配置** | dotenv | ^16.3.1 | 環境變數管理 |
 
 ## 🚀 快速開始
 
-### 環境需求
+### 前置要求
 
-- Node.js 18.0+
-- npm 或 yarn
-- Notion 工作區和 Integration Token
-- Google AI Studio API Key
+- Node.js >= 16.0.0
+- npm >= 8.0.0
+- Notion Integration Token
+- Google Gemini AI API Key
 
-### 1. 安裝
+### 安裝步驟
 
-```bash
-# 克隆專案
-git clone <repository-url>
-cd notion-chat-app
+1. **克隆專案**
+   ```bash
+   git clone https://github.com/user/notion-chat-app.git
+   cd notion-chat-app
+   ```
 
-# 安裝依賴
-npm install
-```
+2. **安裝依賴**
+   ```bash
+   npm install
+   ```
 
-### 2. 配置環境變數
+3. **環境配置**
+   ```bash
+   # 複製環境變數範本
+   cp .env.example .env
+   
+   # 編輯 .env 檔案，填入你的 API 金鑰
+   NOTION_TOKEN=ntn_your_notion_integration_token
+   GEMINI_API_KEY=AIzaSy_your_gemini_api_key
+   ```
 
-複製 `.env.example` 為 `.env` 並設定：
+4. **啟動應用**
+   ```bash
+   # 開發模式 (同時啟動後端和前端)
+   npm run dev
+   ```
 
-```bash
-# Notion API
-NOTION_TOKEN=secret_xxx...
+### 📋 可用指令
 
-# Gemini AI (支援多個 Keys)
-GEMINI_API_KEY=AIzaSy...
-GEMINI_API_KEY_2=AIzaSy...  # 可選
-GEMINI_API_KEY_3=AIzaSy...  # 可選
+| 指令 | 功能 |
+|------|------|
+| `npm start` | 僅啟動 Electron 應用 |
+| `npm run server` | 僅啟動後端 API 伺服器 |
+| `npm run dev` | 同時啟動伺服器和應用 ⭐ |
+| `npm run build` | 建置桌面應用程式 |
 
-# 伺服器
-PORT=3002
-NODE_ENV=development
-```
+## ⚙️ 配置說明
 
-### 3. Notion Integration 設定
+### 環境變數設定
 
-1. 前往 [Notion Developers](https://www.notion.so/my-integrations)
-2. 創建新的 Integration
-3. 複製 `Internal Integration Token`
-4. 在需要搜尋的頁面點擊 **Share** → **Invite** → 選擇你的 Integration
-
-### 4. 運行應用
-
-```bash
-# 開發模式 (同時啟動伺服器和 Electron)
-npm run dev
-
-# 或分別啟動
-npm run server    # 啟動後端 API (port 3002)
-npm start         # 啟動 Electron 桌面應用
-```
-
-## 📖 使用說明
-
-### 基本搜索
-
-1. 在聊天輸入框輸入搜索請求：
-   - "找 React 相關的筆記"
-   - "搜尋關於 API 設計的資料"
-   - "有沒有 Python 教學內容"
-
-2. 選擇搜索模式：
-   - **單循環** 🟢 - 快速搜索，使用原始關鍵詞
-   - **雙循環** 🟡 - 平衡模式，第二輪優化關鍵詞
-   - **三循環** 🔴 - 精確模式，第三輪擴展搜索範圍
-
-### 搜索策略說明
-
-#### 🔍 動態多輪搜索流程
-
-```
-用戶輸入 → 意圖分析 → 生成關鍵詞
-    ↓
-第一輪：原始關鍵詞 → Notion 搜索 → AI 篩選頁面 → 讀取內容 → 評估適用性
-    ↓ (如果不適合)
-第二輪：優化關鍵詞 → 重複上述流程
-    ↓ (如果仍不適合)  
-第三輪：擴展關鍵詞 → 重複上述流程
-    ↓
-生成整合回覆 + 參考連結
-```
-
-## 🛠️ 開發指南
-
-### 專案結構
-
-```
-notion-chat-app/
-├── src/                    # Electron 相關檔案
-│   ├── main.js            # 主程序
-│   ├── preload.js         # 預載腳本 (安全橋接)
-│   └── renderer/          # 渲染程序 (前端)
-│       ├── index.html
-│       ├── styles.css
-│       └── renderer.js
-├── server/                # Express API 伺服器
-│   └── index.js          # API 路由和中間件
-├── services/              # 服務層模組
-│   ├── geminiService.js   # Gemini AI 管理
-│   ├── notionService.js   # Notion API 操作
-│   └── searchService.js   # 搜索業務邏輯
-├── middleware/            # Express 中間件
-│   └── errorHandler.js    # 全域錯誤處理
-├── config/                # 配置檔案
-│   ├── index.js          # 統一配置入口
-│   ├── app.js            # Electron 應用配置
-│   ├── server.js         # 伺服器配置
-│   └── validator.js      # 環境變數驗證
-├── utils/                 # 工具函式
-│   └── logger.js         # 日誌系統
-└── docs/                  # 文檔
-    └── API.md            # API 詳細文檔
-```
-
-### 可用腳本
+在 `.env` 檔案中配置以下變數：
 
 ```bash
-npm run dev          # 開發模式 (concurrently 啟動伺服器和應用)
-npm run server       # 僅啟動 Express API 伺服器
-npm start            # 僅啟動 Electron 應用
-npm run build        # 建置桌面應用程式
-npm test             # 運行測試 (尚未實作)
+# Notion API 設定 (必須)
+NOTION_TOKEN=ntn_your_notion_integration_token
+
+# Gemini API 設定 - 支援多 Key 輪替 (必須)
+GEMINI_API_KEY=AIzaSy_your_primary_key
+GEMINI_API_KEY_2=AIzaSy_your_backup_key_2  # 可選
+GEMINI_API_KEY_3=AIzaSy_your_backup_key_3  # 可選
+
+# 伺服器設定 (可選)
+PORT=3002                    # 預設: 3002
+HOST=localhost              # 預設: localhost
 ```
 
-### API 端點
+### Notion Integration 設定
+
+1. 前往 [Notion Integrations](https://www.notion.so/my-integrations)
+2. 建立新的 Integration
+3. 複製 Integration Token (以 `ntn_` 開頭)
+4. 將 Integration 加入到你要搜尋的 Notion 頁面
+
+### Google Gemini API 設定
+
+1. 前往 [Google AI Studio](https://makersuite.google.com/app/apikey)
+2. 建立 API Key (以 `AIzaSy` 開頭)
+3. 建議設定多個 API Key 以避免配額限制
+
+## 💬 使用方法
+
+### 基本操作
+
+1. **啟動應用**: 運行 `npm run dev`
+2. **選擇搜尋模式**: 
+   - 單循環 (快速) - 基本搜尋
+   - 雙循環 (平衡) - 優化搜尋
+   - 三循環 (精確) - 深度搜尋
+3. **輸入查詢**: 使用自然語言描述你要找的內容
+4. **查看結果**: AI 會分析並回傳相關的 Notion 頁面和智慧回應
+
+### 支援的查詢類型
+
+#### 🔍 搜尋查詢
+```
+找一下關於 JavaScript 的筆記
+有沒有專案管理相關的文件？
+幫我查找會議記錄
+```
+
+#### 👋 問候對話
+```
+你好
+嗨！
+早安
+```
+
+#### 💭 一般對話
+```
+如何學習 React？
+什麼是人工智慧？
+```
+
+## 📊 功能限制與注意事項
+
+### ⚠️ Notion API 限制
+
+- **搜尋範圍**: 僅支援頁面標題搜尋，不支援內容全文搜尋
+- **速率限制**: 每次請求間隔 350ms，避免觸發限制
+- **權限要求**: 需要正確的 Integration 設定和頁面存取權限
+- **回傳限制**: 每次搜尋最多回傳 10 個結果
+
+### 🤖 Gemini AI 限制
+
+- **網路依賴**: 需要穩定的網際網路連線
+- **配額限制**: 有每日 API 調用限制
+- **回應品質**: 依賴模型版本和提示品質
+
+### 🔧 技術限制
+
+- **本地部署**: 需要同時運行後端伺服器 (埠號 3002)
+- **單用戶**: 設計為單用戶桌面應用，無多用戶支援
+- **內容深度**: 頁面內容提取最大深度 3 層
+- **同步處理**: 無法處理大量並行請求
+
+## 📡 API 架構
+
+### 核心端點
 
 | 方法 | 端點 | 描述 |
 |------|------|------|
-| POST | `/chat` | 主要聊天介面，支援多輪搜索 |
-| POST | `/analyze-page` | 分析特定 Notion 頁面 |
+| POST | `/chat` | 主要聊天介面，支援多輪搜尋 |
 | GET  | `/test-notion` | 測試 Notion API 連線 |
 | GET  | `/health` | 伺服器健康檢查 |
 | GET  | `/api-status` | API Keys 狀態檢查 |
 
+### 請求範例
+
+```javascript
+// 發送聊天訊息
+const response = await fetch('http://localhost:3002/chat', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    message: '找一下 JavaScript 相關的筆記',
+    maxRounds: 2  // 搜尋輪數 (1-3)
+  })
+});
+```
+
+### 回應格式
+
+```json
+{
+  "success": true,
+  "response": "AI 產生的智慧回應...",
+  "foundPages": [
+    {
+      "id": "page-id",
+      "title": "頁面標題",
+      "url": "https://www.notion.so/...",
+      "snippet": "頁面摘要..."
+    }
+  ],
+  "intent": "search",
+  "apiStats": {
+    "notionCalls": 2,
+    "geminiCalls": 3,
+    "totalCalls": 5
+  }
+}
+```
+
 詳細 API 文檔請參閱 [docs/API.md](docs/API.md)
 
-## 🔧 配置選項
+## 🗂 專案結構
 
-### Electron 配置 (`config/app.js`)
-
-```javascript
-module.exports = {
-  window: {
-    width: 800,
-    height: 800,
-    webPreferences: {
-      nodeIntegration: false,      // 安全設定
-      contextIsolation: true,      // 啟用上下文隔離
-      preload: path.join(...)      // 安全預載腳本
-    }
-  }
-};
+```
+notion-chat-app/
+├── config/                    # 📁 模組化配置系統
+│   ├── app.js                # ⚙️ Electron 應用配置
+│   ├── server.js             # 🌐 伺服器配置
+│   ├── notion.js             # 📚 Notion API 配置
+│   ├── gemini.js             # 🤖 Gemini AI 配置
+│   ├── validator.js          # ✅ 配置驗證器
+│   └── index.js              # 📤 配置匯出模組
+├── server/
+│   └── index.js              # 🚀 Express API 伺服器主檔
+├── src/
+│   ├── main.js               # 🖥 Electron 主程序
+│   ├── preload.js            # 🔒 安全的 IPC 橋接
+│   └── renderer/             # 🎨 前端渲染程序
+│       ├── index.html        # 📄 主介面
+│       ├── renderer.js       # ⚡ 前端邏輯
+│       └── styles.css        # 🎭 介面樣式
+├── services/                 # 🛠 業務邏輯服務層
+│   ├── geminiService.js      # 🤖 Gemini AI 服務
+│   ├── notionService.js      # 📚 Notion API 服務
+│   └── searchService.js      # 🔍 多輪搜尋服務
+├── middleware/
+│   └── errorHandler.js       # 🚨 錯誤處理中間件
+├── utils/
+│   └── logger.js             # 📋 日誌工具
+├── docs/                     # 📖 專案文檔
+└── .env.example              # 🔧 環境變數範本
 ```
 
-### 伺服器配置 (`config/server.js`)
+## 🔧 開發指南
 
-```javascript
-module.exports = {
-  port: process.env.PORT || 3002,
-  cors: {
-    origin: ['http://localhost:*', 'https://localhost:*'],
-    credentials: true
-  }
-};
+### 本地開發
+
+1. **修改程式碼**: 編輯相關檔案
+2. **熱重載**: 
+   - 後端更改需重啟 `npm run dev`
+   - 前端更改可直接重新載入
+3. **偵錯**: 開發模式會自動開啟 DevTools
+
+### 新增功能
+
+1. **新增 API 端點**: 在 `server/index.js` 中新增路由
+2. **擴展搜尋邏輯**: 修改 `services/searchService.js`
+3. **調整 UI**: 編輯 `src/renderer/` 下的檔案
+4. **新增配置**: 在 `config/` 目錄下建立模組
+
+### 程序管理
+
+#### 正常關閉
+在終端按 `Ctrl+C` 中斷程序
+
+#### 強制關閉
+如果程序未正常關閉：
+```bash
+# 查找占用 3002 埠號的程序
+netstat -ano | findstr :3002
+
+# 終止程序 (將 PID 替換為實際程序 ID)
+powershell "Stop-Process -Id [PID] -Force"
 ```
 
-## 🧪 測試
+## 🚢 部署與建置
+
+### 桌面應用建置
 
 ```bash
-# 測試 Notion API 連線
-curl http://localhost:3002/test-notion
+# 建置所有平台
+npm run build
 
-# 測試聊天功能
-curl -X POST http://localhost:3002/chat \
-  -H "Content-Type: application/json" \
-  -d '{"message":"找React筆記","maxRounds":2}'
-
-# 檢查伺服器健康狀態
-curl http://localhost:3002/health
+# 輸出位置: dist/
 ```
 
-## 🔐 安全考量
+### 環境部署檢查清單
 
-### Electron 安全
+- [ ] Node.js >= 16.0.0 已安裝
+- [ ] 埠號 3002 未被佔用
+- [ ] Notion Integration Token 已設定且有效
+- [ ] Gemini API Key 已設定且有效
+- [ ] 網際網路連線正常
+- [ ] Notion 工作區權限已正確配置
 
-- ✅ 禁用 `nodeIntegration`
-- ✅ 啟用 `contextIsolation`
-- ✅ 使用安全的 `preload.js` 腳本
-- ✅ 透過 `contextBridge` 限制 API 暴露
+## 🤖 AI 快速參考 (機器可讀)
 
-### API 安全
+```yaml
+project_metadata:
+  name: "notion-chat-app"
+  type: "electron-desktop-app"
+  version: "1.0.0"
+  
+core_technologies:
+  frontend: "electron@27.0.0"
+  backend: "express@4.18.2"
+  ai_service: "google-generative-ai@0.2.1"
+  api_client: "@notionhq/client@2.2.13"
+  
+architecture_pattern: "electron-ipc-express-api"
 
-- ✅ 統一錯誤處理中間件
-- ✅ 環境變數驗證
-- ✅ 程序級錯誤捕獲
-- ✅ API Key 輪替機制
+entry_points:
+  electron_main: "src/main.js"
+  api_server: "server/index.js"
+  frontend: "src/renderer/index.html"
+  
+api_endpoints:
+  - "POST /chat"
+  - "GET /test-notion" 
+  - "GET /health"
+  - "GET /api-status"
 
-## 📊 效能最佳化
+key_services:
+  - "services/searchService.js"    # Multi-round search engine
+  - "services/notionService.js"    # Notion API integration
+  - "services/geminiService.js"    # Gemini AI management
+  
+config_system: "config/ directory with modular configuration"
 
-### API 調用管理
+environment_vars:
+  required: ["NOTION_TOKEN", "GEMINI_API_KEY"]
+  optional: ["GEMINI_API_KEY_2", "GEMINI_API_KEY_3", "PORT", "HOST"]
+  
+intent_types: ["greeting", "search", "chat"]
+search_modes: [1, 2, 3]  # rounds of search
 
-- **Notion API**: 內建速率限制 (每秒 3 次請求)
-- **Gemini AI**: 多 Key 輪替，自動錯誤恢復
-- **記憶體管理**: 限制頁面內容大小和遞歸深度
-
-### 搜索效率
-
-- 關鍵詞去重機制
-- 頁面選擇優化 (AI 篩選最相關)
-- 內容適用性預先評估
-
-## 🚧 已知限制
-
-1. **Notion API 限制**: 只能搜索頁面標題，不能搜索內容
-2. **語言支援**: 主要針對繁體中文優化
-3. **快取機制**: 目前無搜索結果快取
-4. **離線功能**: 需要網路連線才能運作
-
-## 🛣️ 未來規劃
-
-- [ ] 搜索結果快取機制
-- [ ] 支援更多語言
-- [ ] 頁面內容全文搜索
-- [ ] 搜索歷史記錄
-- [ ] 自定義搜索模板
-- [ ] 資料匯出功能
-
-## 🐛 故障排除
-
-### 常見問題
-
-**Q: Notion API 連線失敗**
-```bash
-# 檢查 Token 設定
-curl -H "Authorization: Bearer YOUR_TOKEN" \
-  https://api.notion.com/v1/users/me
+limitations:
+  notion_api: "title_search_only"
+  rate_limit: "350ms_between_requests"
+  max_results: 10
+  content_depth: 3
+  
+development_commands:
+  dev: "npm run dev"
+  server_only: "npm run server"  
+  electron_only: "npm start"
+  build: "npm run build"
 ```
 
-**Q: Gemini API 配額用盡**
-- 添加更多 API Keys 到環境變數
-- 檢查 API Keys 狀態: `GET /api-status`
+## 🤝 開發團隊
 
-**Q: Electron 無法啟動**
-- 確認 Node.js 版本 18+
-- 清除 node_modules: `rm -rf node_modules && npm install`
+| 角色 | 功能 |
+|------|------|
+| **Core Developer** | 架構設計、核心功能開發 |
+| **AI Integration** | Gemini AI 整合、智慧分析 |
+| **UI/UX Design** | 使用者介面設計、互動體驗 |
 
-### 除錯模式
+## 📄 授權條款
 
-```bash
-# 啟用詳細日誌
-NODE_ENV=development npm run dev
+本專案採用 MIT 授權條款。詳細內容請參閱 [LICENSE](LICENSE) 檔案。
 
-# 查看錯誤日誌
-tail -f logs/error.log  # 如果有日誌檔案
-```
+## 🔗 相關連結
 
-## 🤝 貢獻指南
-
-1. Fork 專案
-2. 創建功能分支: `git checkout -b feature/new-feature`
-3. 提交變更: `git commit -m 'Add new feature'`
-4. 推送分支: `git push origin feature/new-feature`
-5. 提交 Pull Request
-
-## 📝 授權條款
-
-本專案採用 MIT 授權條款 - 詳見 [LICENSE](LICENSE) 檔案
-
-## 🙏 致謝
-
-- [Notion API](https://developers.notion.com/) - 強大的筆記平台
-- [Google Gemini AI](https://ai.google.dev/) - 先進的生成式 AI
-- [Electron](https://www.electronjs.org/) - 跨平台桌面應用框架
+- [Notion API 文檔](https://developers.notion.com/)
+- [Google Gemini AI](https://ai.google.dev/)
+- [Electron 官方文檔](https://www.electronjs.org/)
+- [專案 API 詳細文檔](docs/API.md)
 
 ---
 
-**如有問題或建議，歡迎開啟 Issue 討論！** 🚀
+**Made with ❤️ by Developer Team**
 
-*最後更新: 2025-01-11*
+*如有問題或建議，歡迎提交 Issue 或 Pull Request*

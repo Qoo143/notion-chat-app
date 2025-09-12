@@ -7,7 +7,7 @@ module.exports = {
     // 錯誤訊息
     errors: {
       serverConnection: '無法連接到伺服器',
-      notionPermission: '權限不足：Integration 需要 "Read content" 權限，請檢查 Notion Integration 設定',
+      notionPermission: '權限不足:Integration 需要 "Read content" 權限，請檢查 Notion Integration 設定',
       pageNotFound: '頁面不存在或 Integration 沒有存取權限',
       contentReadError: '無法讀取頁面內容',
       aiProcessingError: '抱歉，我現在無法正常回應。請稍後再試，或者告訴我您想要搜尋什麼 Notion 內容。'

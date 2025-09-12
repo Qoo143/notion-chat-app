@@ -104,47 +104,6 @@ app.post('/chat', asyncHandler(async (req, res) => {
   }
 }));
 
-// 頁面分析端點
-app.post('/analyze-page', asyncHandler(async (req, res) => {
-  try {
-    const { pageId, question } = req.body;
-
-    if (!pageId) {
-      return res.status(400).json({ error: '請提供頁面 ID' });
-    }
-
-    logger.info(`分析頁面: ${pageId}, 問題: ${question || '無特定問題'}`);
-
-    const apiCounter = new APICounter();
-    const pageContent = await notionService.getPageContent(pageId, apiCounter);
-
-    if (!pageContent) {
-      return res.json({
-        success: false,
-        response: '抱歉，無法讀取該頁面的內容。可能是權限問題或頁面不存在。'
-      });
-    }
-
-    const analysisPrompt = question
-      ? `用戶問題：「${question}」\n\n以下是 Notion 頁面的內容：\n${pageContent.content}\n\n請根據頁面內容回答用戶的問題，用繁體中文回覆。`
-      : `以下是 Notion 頁面的內容：\n${pageContent.content}\n\n請用繁體中文總結這個頁面的主要內容，包括關鍵重點和重要資訊。`;
-
-    const result = await geminiService.generateContent(analysisPrompt);
-    apiCounter.incrementGemini();
-    const response = await result.response;
-
-    res.json({
-      success: true,
-      response: response.text(),
-      contentLength: pageContent.content.length,
-      title: pageContent.title,
-      url: pageContent.url
-    });
-
-  } catch (error) {
-    throw error;
-  }
-}));
 
 // 測試 Notion API 連線
 app.get('/test-notion', asyncHandler(async (req, res) => {
@@ -197,29 +156,29 @@ app.get('/api-status', (req, res) => {
 async function analyzeUserIntent(message, apiCounter) {
   try {
     const intentPrompt = `
-分析以下用戶訊息的意圖：「${message}」
+    分析以下用戶訊息的意圖：「${message}」
 
-請以JSON格式回覆：
-{
-  "intentType": "greeting|search|chat",
-  "keywords": ["關鍵詞1", "關鍵詞2", "關鍵詞3"],
-  "confidence": 0.8
-}
+    請以JSON格式回覆:
+    {
+      "intentType": "greeting|search|chat",
+      "keywords": ["關鍵詞1", "關鍵詞2", "關鍵詞3"],
+      "confidence": 0.8
+    }
 
-意圖分類：
-1. greeting: 純粹打招呼（你好、嗨、早安等）
-2. search: 想要搜尋/查找/找到特定資料（包含「找」、「搜尋」、「查」、「有沒有」等）
-3. chat: 一般對話或問答
+    意圖分類：
+    1. greeting: 純粹打招呼（你好、嗨、早安等）
+    2. search: 想要搜尋/查找/找到特定資料（包含「找」、「搜尋」、「查」、「有沒有」等）
+    3. chat: 一般對話或問答
 
-如果是search意圖，請提供3個最適合的關鍵詞用於Notion頁面標題搜索。
+    如果是search意圖，請提供3個最適合的關鍵詞用於Notion頁面標題搜索。
 
-⚠️ **重要：Notion API 搜尋限制**
-- 只搜尋頁面標題，不搜尋內容
-- 關鍵詞必須可能出現在標題中
-- 優先選擇名詞、技術術語、專案名稱
+    ⚠️ **重要:Notion API 搜尋限制**
+    - 只搜尋頁面標題，不搜尋內容
+    - 關鍵詞必須可能出現在標題中
+    - 優先選擇名詞、技術術語、專案名稱
 
-只回覆JSON，不要其他文字。
-`;
+    只回覆JSON，不要其他文字。
+    `;
 
     const result = await geminiService.generateContent(intentPrompt);
     apiCounter.incrementGemini();
@@ -245,7 +204,8 @@ async function handleGreeting(message, apiCounter) {
   try {
     const greetingPrompt = `用戶說：「${message}」
     
-請以友善、簡潔的方式用繁體中文回應這個問候，並簡單介紹你可以幫助搜尋他們的 Notion 筆記。回覆限制在50字以內。`;
+    請以友善、簡潔的方式用繁體中文回應這個問候，
+    並簡單介紹你可以幫助搜尋他們的 Notion 筆記。回覆限制在50字以內。`;
 
     const result = await geminiService.generateContent(greetingPrompt);
     apiCounter.incrementGemini();
@@ -263,7 +223,9 @@ async function handleGeneralChat(message, apiCounter) {
   try {
     const chatPrompt = `用戶說：「${message}」
 
-請以友善、有幫助的方式用繁體中文回覆。你是一個智能助手，可以回答各種問題、提供建議或進行對話。如果用戶之後想要搜尋 Notion 筆記，你也可以協助他們。`;
+    請以友善、有幫助的方式用繁體中文回覆。
+    你是一個智能助手，可以回答各種問題、提供建議或進行對話。
+    如果用戶之後想要搜尋 Notion 筆記，你也可以協助他們。`;
 
     const result = await geminiService.generateContent(chatPrompt);
     apiCounter.incrementGemini();
@@ -295,11 +257,11 @@ app.use(errorHandler);
 
 // 啟動伺服器
 app.listen(PORT, () => {
-  logger.info(`🚀 Notion Chat API 伺服器已啟動`);
-  logger.info(`📡 監聽埠號: ${PORT}`);
-  logger.info(`🌐 API 端點: http://localhost:${PORT}`);
+  logger.info(`Notion Chat API 伺服器已啟動`);
+  logger.info(`監聽埠號: ${PORT}`);
+  logger.info(`API 端點: http://localhost:${PORT}`);
   
   // 啟動時檢查服務狀態
-  logger.info(`🔑 Gemini API Keys: ${geminiService.apiKeys.length} 個`);
-  logger.info(`📋 Notion Token: ${process.env.NOTION_TOKEN ? '已設定' : '未設定'}`);
+  logger.info(`Gemini API Keys: ${geminiService.apiKeys.length} 個`);
+  logger.info(`Notion Token: ${process.env.NOTION_TOKEN ? '已設定' : '未設定'}`);
 });

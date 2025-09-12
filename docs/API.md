@@ -2,7 +2,8 @@
 
 ## 概述
 
-這是一個整合 Notion API 和 Google Gemini AI 的桌面聊天應用程式後端 API。用戶可以透過自然語言搜尋他們的 Notion 工作區，並獲得 AI 驅動的回應。
+這是一個整合 Notion API 和 Google Gemini AI 的桌面聊天應用程式後端 API。
+用戶可以透過自然語言搜尋他們的 Notion 工作區，並獲得 AI 驅動的回應。
 
 **基礎 URL**: `http://localhost:3002`
 
@@ -73,34 +74,7 @@
 
 ---
 
-### 2. 頁面分析 API
-
-**端點**: `POST /analyze-page`
-
-分析特定 Notion 頁面內容，可選擇性提出問題。
-
-#### 請求格式
-```json
-{
-  "pageId": "notion-page-id",
-  "question": "關於此頁面的問題"  // 可選
-}
-```
-
-#### 回應格式
-```json
-{
-  "success": true,
-  "response": "AI 分析結果或問題回答",
-  "contentLength": 1250,
-  "title": "頁面標題",
-  "url": "https://www.notion.so/..."
-}
-```
-
----
-
-### 3. Notion API 測試
+### 2. Notion API 測試
 
 **端點**: `GET /test-notion`
 
@@ -276,19 +250,6 @@ fetch('http://localhost:3002/chat', {
 .then(data => console.log(data));
 ```
 
-### 分析特定頁面
-```javascript
-fetch('http://localhost:3002/analyze-page', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({
-    pageId: 'f47ac10b-58cc-4372-a567-0e02b2c3d479',
-    question: '這篇筆記的主要重點是什麼？'
-  })
-})
-.then(response => response.json())
-.then(data => console.log(data));
-```
 
 ---
 

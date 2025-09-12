@@ -10,7 +10,6 @@ module.exports = {
   intentTypes: {
     GREETING: 'greeting',
     SEARCH: 'search',
-    CHAT: 'chat',
-    ANALYZE: 'analyze'
+    CHAT: 'chat'
   }
 };
