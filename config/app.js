@@ -1,3 +1,5 @@
+const path = require('path');
+
 // 應用程式配置
 module.exports = {
   // Electron 主視窗設定
@@ -5,8 +7,9 @@ module.exports = {
     width: 800,
     height: 800,
     webPreferences: {
-      nodeIntegration: true,
-      contextIsolation: false
+      nodeIntegration: false,
+      contextIsolation: true,
+      preload: path.join(__dirname, '..', 'src', 'preload.js')
     }
   },
   

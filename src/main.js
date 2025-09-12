@@ -1,3 +1,4 @@
+require('dotenv').config();
 const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
 const axios = require('axios');
@@ -42,6 +43,13 @@ ipcMain.handle('send-message', async (event, messageData) => {
       error: error.response?.data?.error || '無法連接到伺服器'
     };
   }
+});
+
+// 提供配置給前端
+ipcMain.handle('get-config', () => {
+  return {
+    apiBaseUrl: config.server.apiBaseUrl
+  };
 });
 
 app.whenReady().then(createWindow);

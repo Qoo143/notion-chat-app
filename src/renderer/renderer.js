@@ -1,4 +1,4 @@
-const { ipcRenderer } = require('electron');
+// 透過 preload 腳本安全地存取 Electron API
 
 class ChatApp {
     constructor() {
@@ -10,10 +10,16 @@ class ChatApp {
         this.searchModeSelect = document.getElementById('searchModeSelect');
         this.costIndicator = document.getElementById('costIndicator');
         
+        // 配置會在 init 中載入
+        this.config = null;
+        
         this.init();
     }
 
-    init() {
+    async init() {
+        // 載入配置
+        await this.loadConfig();
+        
         // 設置歡迎訊息時間
         document.getElementById('welcomeTime').textContent = this.formatTime(new Date());
         
@@ -36,11 +42,24 @@ class ChatApp {
         this.checkServerStatus();
     }
 
+    async loadConfig() {
+        try {
+            this.config = await window.electronAPI.getConfig();
+            console.log('配置載入成功:', this.config);
+        } catch (error) {
+            console.error('配置載入失敗:', error);
+            // 使用預設配置
+            this.config = { apiBaseUrl: 'http://localhost:3002' };
+        }
+    }
+
     async checkServerStatus() {
         this.updateStatus('connecting', '檢查連線...');
         
         try {
-            const response = await fetch('http://localhost:3002/health');
+            const healthUrl = `${this.config.apiBaseUrl}/health`;
+            console.log('檢查伺服器狀態:', healthUrl);
+            const response = await fetch(healthUrl);
             if (response.ok) {
                 this.updateStatus('ready', '已連線');
             } else {
@@ -111,7 +130,7 @@ class ChatApp {
             const maxRounds = parseInt(this.searchModeSelect.value);
             
             // 發送到後端（包含搜尋模式參數）
-            const result = await ipcRenderer.invoke('send-message', { message, maxRounds });
+            const result = await window.electronAPI.sendMessage({ message, maxRounds });
             
             // 移除載入訊息
             this.removeMessage(loadingMessage);

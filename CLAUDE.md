@@ -118,3 +118,25 @@ ipcMain.handle('send-message', async (event, message) => {
 
 ### 更改 API 伺服器埠號
 同時更新 `.env` 檔案和 `src/main.js:29` 中的硬編碼埠號。
+
+## 程序管理
+
+### 如何正確關閉開發伺服器
+
+當使用 `npm run dev` 啟動應用後，若需要停止程序：
+
+1. **正常關閉**: 在終端按 `Ctrl+C` 中斷程序
+2. **強制關閉**: 如果程序未正常關閉，使用以下指令：
+
+```bash
+# 查找占用 3002 埠號的程序
+netstat -ano | findstr :3002
+
+# 使用 PowerShell 終止程序 (將 PID 替換為實際程序 ID)
+powershell "Stop-Process -Id [PID] -Force"
+```
+
+**注意**: 
+- 程序 ID 會在每次啟動時變動
+- 請確保終止正確的 Node.js 程序，避免影響其他應用
+- 終止程序前請先嘗試 `Ctrl+C` 正常關閉
