@@ -1,5 +1,4 @@
 const logger = require('../utils/logger');
-const config = require('../config');
 
 /**
  * 全域錯誤處理中間件
