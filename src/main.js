@@ -25,10 +25,11 @@ function createWindow() {
 // 處理聊天請求
 ipcMain.handle('send-message', async (event, messageData) => {
   try {
-    // 支援新舊兩種格式
-    const requestData = typeof messageData === 'string' 
-      ? { message: messageData }
-      : { message: messageData.message, maxRounds: messageData.maxRounds };
+    // 統一使用物件格式
+    const requestData = { 
+      message: messageData.message, 
+      maxRounds: messageData.maxRounds || 1 
+    };
     
     const response = await axios.post(`${config.server.apiBaseUrl}/chat`, requestData);
     

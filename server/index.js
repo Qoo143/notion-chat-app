@@ -1,13 +1,24 @@
-const express = require('express');
-const cors = require('cors');
-require('dotenv').config();
+// 外部依賴模組
+const express = require('express');             // Web 應用框架
+const cors = require('cors');                   // 跨域資源共享中間件
+require('dotenv').config();                     // 環境變數載入
 
-const config = require('../config');
-const logger = require('../utils/logger');
-const geminiService = require('../services/geminiService');
-const notionService = require('../services/notionService');
-const searchService = require('../services/searchService');
-const { errorHandler, notFoundHandler, asyncHandler, setupProcessErrorHandling } = require('../middleware/errorHandler');
+// 內部模組引入
+const config = require('../config');            // 統一配置管理
+const logger = require('../utils/logger');      // 日誌工具
+
+// 核心服務模組
+const geminiService = require('../services/geminiService');    // Google Gemini AI 服務
+const notionService = require('../services/notionService');    // Notion API 整合服務
+const searchService = require('../services/searchService');    // 多輪搜尋引擎
+
+// 中間件模組
+const { 
+  errorHandler,              // 全域錯誤
+  notFoundHandler,           // 404 錯誤
+  asyncHandler,              // 非同步錯誤
+  setupProcessErrorHandling  // 程序級錯誤
+} = require('../middleware/errorHandler');       // 錯誤處理中間件
 
 const app = express();
 const PORT = config.server.port;
