@@ -244,6 +244,12 @@ body {
             .indented-content {
                 color: rgba(255, 248, 243, 0.8);
             }
+
+            code.inline-code {
+                background: rgba(255, 248, 243, 0.15);
+                color: $cream;
+                border-color: rgba(255, 248, 243, 0.25);
+            }
         }
     }
 
@@ -349,6 +355,17 @@ body {
         height: 2px;
         background: linear-gradient(to right, transparent, $stone-gray, transparent);
         margin: 15px 0;
+    }
+
+    // 內聯程式碼樣式
+    code.inline-code {
+        background: rgba(141, 115, 85, 0.1);
+        color: $dark-earth;
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+        font-size: 0.9em;
+        border: 1px solid rgba(141, 115, 85, 0.15);
     }
 }
 
