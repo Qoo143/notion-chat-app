@@ -10,7 +10,9 @@ module.exports = {
   // 內容讀取設定
   content: {
     maxDepth: 3,           // 遞歸讀取最大深度
-    maxPreviewLength: 3000, // 內容預覽最大長度
-    rateLimitDelay: 350    // API 請求間隔（毫秒）
+    maxPreviewLength: 8000, // 內容預覽最大長度
+    rateLimitDelay: 350,   // API 請求間隔（毫秒）
+    maxBlocksPerPage: 100, // 每頁最大區塊數
+    maxRecursiveDepth: 3   // 遞歸處理最大深度
   }
 };

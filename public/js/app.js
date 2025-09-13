@@ -255,81 +255,84 @@ class ChatApp {
             console.log('🔍 [DEBUG] 原始內容長度:', text.length);
         }
         
-        // 1. 轉換換行符號為 <br>
+        // 1. 先轉義HTML特殊字符，避免被瀏覽器錯誤解析
+        processed = processed.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+        // 2. 轉換換行符號為 <br>
         processed = processed.replace(/\n/g, '<br>');
         if (this.config.isDevelopment) {
-            console.log('🔍 [DEBUG] 步驟1 - 換行處理後:', processed.substring(0, 200) + (processed.length > 200 ? '...' : ''));
+            console.log('🔍 [DEBUG] 步驟2 - 換行處理後:', processed.substring(0, 200) + (processed.length > 200 ? '...' : ''));
         }
-        
-        // 2. 處理 Markdown 語法
+
+        // 3. 處理 Markdown 語法
         // 先處理內聯程式碼 `code` (要在粗體前處理，避免衝突)
         processed = processed.replace(/`([^`]+)`/g, '<code class="inline-code">$1</code>');
         
         // 處理粗體 **text**
         processed = processed.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
         
-        // 處理斜體 *text* (要在粗體後處理，避免衝突)
-        processed = processed.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+        // 處理斜體 *text* (要在粗體後處理，避免衝突，但避免處理程式碼中的單一星號)
+        processed = processed.replace(/\*([^*<>`]+)\*/g, '<em>$1</em>');
         
         if (this.config.isDevelopment) {
-            console.log('🔍 [DEBUG] 步驟2 - Markdown 語法處理後:', processed.substring(0, 200) + (processed.length > 200 ? '...' : ''));
+            console.log('🔍 [DEBUG] 步驟3 - Markdown 語法處理後:', processed.substring(0, 200) + (processed.length > 200 ? '...' : ''));
         }
         
-        // 3. 處理項目符號列表
-        processed = processed.replace(/^•\s(.+)$/gm, '<div class="bullet-item">• $1</div>');
+        // 4. 處理項目符號列表 (修復正規表達式，避免貪婪匹配)
+        processed = processed.replace(/^•\s([^\r\n]+)$/gm, '<div class="bullet-item">• $1</div>');
         if (this.config.isDevelopment) {
-            console.log('🔍 [DEBUG] 步驟3a - 項目符號處理後:', processed.substring(0, 200) + (processed.length > 200 ? '...' : ''));
+            console.log('🔍 [DEBUG] 步驟4a - 項目符號處理後:', processed.substring(0, 200) + (processed.length > 200 ? '...' : ''));
         }
         
-        processed = processed.replace(/^\d+\.\s(.+)$/gm, '<div class="numbered-item">$1</div>');
+        processed = processed.replace(/^\d+\.\s([^\r\n]+)$/gm, '<div class="numbered-item">$1</div>');
         if (this.config.isDevelopment) {
-            console.log('🔍 [DEBUG] 步驟3b - 數字列表處理後:', processed.substring(0, 200) + (processed.length > 200 ? '...' : ''));
+            console.log('🔍 [DEBUG] 步驟4b - 數字列表處理後:', processed.substring(0, 200) + (processed.length > 200 ? '...' : ''));
         }
         
-        // 4. 處理標題
-        processed = processed.replace(/^###\s(.+)$/gm, '<h3 class="message-h3">$1</h3>');
-        processed = processed.replace(/^##\s(.+)$/gm, '<h2 class="message-h2">$1</h2>');
-        processed = processed.replace(/^#\s(.+)$/gm, '<h1 class="message-h1">$1</h1>');
+        // 5. 處理標題 (修復正規表達式，避免貪婪匹配導致內容截斷)
+        processed = processed.replace(/^###\s([^\r\n]+)$/gm, '<h3 class="message-h3">$1</h3>');
+        processed = processed.replace(/^##\s([^\r\n]+)$/gm, '<h2 class="message-h2">$1</h2>');
+        processed = processed.replace(/^#\s([^\r\n]+)$/gm, '<h1 class="message-h1">$1</h1>');
         if (this.config.isDevelopment) {
-            console.log('🔍 [DEBUG] 步驟4 - 標題處理後:', processed.substring(0, 200) + (processed.length > 200 ? '...' : ''));
+            console.log('🔍 [DEBUG] 步驟5 - 標題處理後:', processed.substring(0, 200) + (processed.length > 200 ? '...' : ''));
         }
         
-        // 5. 處理分隔線
+        // 6. 處理分隔線
         processed = processed.replace(/^[═─━]{3,}$/gm, '<hr class="message-separator">');
         if (this.config.isDevelopment) {
-            console.log('🔍 [DEBUG] 步驟5 - 分隔線處理後:', processed.substring(0, 200) + (processed.length > 200 ? '...' : ''));
+            console.log('🔍 [DEBUG] 步驟6 - 分隔線處理後:', processed.substring(0, 200) + (processed.length > 200 ? '...' : ''));
         }
         
-        // 6. 處理 emoji 開頭的重要區塊
+        // 7. 處理 emoji 開頭的重要區塊
         processed = processed.replace(/^(📚|📄|🔗|📝|💬|🖼️|🎥|📎|🔖)\s\*\*(.*?)\*\*：?$/gm, 
             '<div class="info-block"><span class="emoji">$1</span> <strong>$2</strong></div>');
         if (this.config.isDevelopment) {
-            console.log('🔍 [DEBUG] 步驟6 - Emoji 區塊處理後:', processed.substring(0, 200) + (processed.length > 200 ? '...' : ''));
+            console.log('🔍 [DEBUG] 步驟7 - Emoji 區塊處理後:', processed.substring(0, 200) + (processed.length > 200 ? '...' : ''));
         }
         
-        // 7. 處理縮排內容
-        processed = processed.replace(/^    (.+)$/gm, '<div class="indented-content">$1</div>');
+        // 8. 處理縮排內容 (修復正規表達式，避免貪婪匹配)
+        processed = processed.replace(/^    ([^\r\n]+)$/gm, '<div class="indented-content">$1</div>');
         if (this.config.isDevelopment) {
-            console.log('🔍 [DEBUG] 步驟7 - 縮排處理後:', processed.substring(0, 200) + (processed.length > 200 ? '...' : ''));
+            console.log('🔍 [DEBUG] 步驟8 - 縮排處理後:', processed.substring(0, 200) + (processed.length > 200 ? '...' : ''));
         }
         
-        // 8. 將 URL 轉換為可點擊的連結（放在最後以避免干擾其他格式）
+        // 9. 將 URL 轉換為可點擊的連結（放在最後以避免干擾其他格式）
         const urlRegex = /(https?:\/\/[^\s<>\)]+)/g;
         processed = processed.replace(urlRegex, (url) => {
             const cleanUrl = url.replace(/[.,;!?)]+$/, '');
             return `<a href="${cleanUrl}" class="notion-link" target="_blank">${cleanUrl}</a>`;
         });
         if (this.config.isDevelopment) {
-            console.log('🔍 [DEBUG] 步驟8 - URL 處理後:', processed.substring(0, 200) + (processed.length > 200 ? '...' : ''));
+            console.log('🔍 [DEBUG] 步驟9 - URL 處理後:', processed.substring(0, 200) + (processed.length > 200 ? '...' : ''));
         }
         
-        // 9. 處理參考資料區塊
+        // 10. 處理參考資料區塊
         processed = processed.replace(
             /📚\s\*\*參考資料：\*\*/g, 
             '<div class="reference-section"><strong>📚 參考資料：</strong></div>'
         );
         if (this.config.isDevelopment) {
-            console.log('🔍 [DEBUG] 步驟9 - 參考資料處理後:', processed.substring(0, 200) + (processed.length > 200 ? '...' : ''));
+            console.log('🔍 [DEBUG] 步驟10 - 參考資料處理後:', processed.substring(0, 200) + (processed.length > 200 ? '...' : ''));
             console.log('🔍 [DEBUG] 最終處理結果:', processed);
             console.log('🔍 [DEBUG] 最終內容長度:', processed.length);
         }
