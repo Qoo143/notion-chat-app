@@ -125,6 +125,10 @@ class ChatApp {
             const response = await axios.post(`${this.config.apiBaseUrl}/api/chat`, { 
                 message, 
                 maxRounds 
+            }, {
+                headers: {
+                    'Content-Type': 'application/json; charset=utf-8'
+                }
             });
             
             // 移除載入訊息

@@ -12,10 +12,10 @@ const systemRoutes = require('./system');  // 系統狀態路由
  * @param {string} prefix - API 路由前綴，預設為空字串
  */
 function registerRoutes(app, prefix = '') {
-  // 註冊路由模組
+  // 註冊路由模組 - 統一使用一致的前綴
   app.use(`${prefix}/chat`, chatRoutes);    // POST /api/chat
-  app.use(`${prefix}`, systemRoutes);       // GET /api/health, /api/api-status, /api/test-notion
-  
+  app.use(`${prefix}`, systemRoutes);       // GET /api/system/health, /api/system/status, /api/system/test
+
   // 可以在這裡添加更多路由模組
   // app.use(`${prefix}/users`, userRoutes);
   // app.use(`${prefix}/admin`, adminRoutes);

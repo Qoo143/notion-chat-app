@@ -9,7 +9,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ```bash
 # 閱讀完整專案文檔和 AI 機器可讀區塊
 Read README.md
-# 特別注意第 336-388 行的 YAML 格式快速參考區塊
+# 特別注意第 337-396 行的 YAML 格式快速參考區塊
 ```
 
 該區塊包含：
@@ -21,23 +21,28 @@ Read README.md
 
 ## 🏗 專案架構摘要
 
-**Notion Chat App** - AI 驅動的桌面聊天應用程式，整合 Electron + Express + Notion API + Google Gemini AI
+**Notion Chat App** - AI 驅動的網頁聊天應用程式，整合 Express + Notion API + Google Gemini AI
 
 ### 🔧 核心技術栈
-- **前端**: Electron 27.0.0 (桌面應用框架)
-- **後端**: Express.js 4.18.2 (API 伺服器)
+- **前端**: 原生 HTML/CSS/JavaScript (大地色系設計)
+- **後端**: Express.js 4.18.2 (Web 伺服器)
 - **AI 服務**: Google Gemini AI (@google/generative-ai)
 - **API 整合**: Notion Client (@notionhq/client)
+- **部署**: Render 雲端平台
 
 ### 🗂 關鍵檔案位置
 ```
-├── server/index.js              # 主 API 伺服器，路由與意圖分析
-├── src/main.js                  # Electron 主程序 + dotenv
-├── src/renderer/                # 前端 UI (HTML/CSS/JS)
+├── server/index.js              # 主 Web 伺服器，路由與意圖分析
+├── public/                      # 靜態網頁檔案
+│   ├── index.html               # 主介面 (SPA)
+│   ├── js/app.js                # 前端邏輯
+│   ├── css/styles.css           # 編譯後樣式
+│   └── scss/                    # SCSS 原始檔案
 ├── services/                    # 業務邏輯層
 │   ├── searchService.js         # 多輪搜尋引擎 (1-3 輪)
 │   ├── notionService.js         # Notion API 整合
 │   └── geminiService.js         # Gemini AI 管理 + 多 Key 輪替
+├── routes/                      # API 路由模組
 ├── config/                      # 模組化配置系統
 │   ├── validator.js             # 環境變數驗證 (ntn_ 前綴支援)
 │   └── intentAnalysis.js        # 意圖分析配置
@@ -47,20 +52,20 @@ Read README.md
 ## 📡 資料流向與通訊架構
 
 ```
-用戶輸入 → renderer.js → IPC(preload.js) → main.js → HTTP → server/index.js
-                                                                    ↓
-                                                             analyzeUserIntent()
-                                                                    ↓
-                                                        {greeting|search|chat}
-                                                                    ↓
-                                         searchService → Notion API + Gemini AI
-                                                                    ↓
-                                                              格式化回應
+用戶輸入 → Web 前端 → HTTP → server/index.js → /api/chat
+                                     ↓
+                              analyzeUserIntent()
+                                     ↓
+                        {greeting|search|chat}
+                                     ↓
+                  searchService → Notion API + Gemini AI
+                                     ↓
+                               格式化回應
 ```
 
 ## 🎯 核心功能系統
 
-### 智慧意圖分析 (server/index.js:197)
+### 智慧意圖分析 (server/index.js)
 - **支援類型**: greeting、search、chat
 - **AI 驅動**: 使用 Gemini 分析用戶意圖與關鍵詞
 - **配置位置**: config/intentAnalysis.js
@@ -91,35 +96,27 @@ GEMINI_API_KEY_2=...               # 備用 Key (可選)
 GEMINI_API_KEY_3=...               # 備用 Key (可選)
 
 # 可選設定
-PORT=3002                          # 固定埠號，hardcoded 在 main.js
-HOST=localhost
+PORT=3002                          # 固定埠號，可由 Render 自動設定
+HOST=0.0.0.0                      # 部署時使用
+NODE_ENV=production                # 生產環境
 ```
 
 ### 開發指令
 ```bash
-npm run dev     # 推薦：同時啟動後端和前端
-npm run server  # 僅後端 API 伺服器
-npm start       # 僅 Electron 應用
-npm run build   # 建置桌面應用
-```
-
-### 程序管理
-```bash
-# 正常關閉
-Ctrl+C
-
-# 強制終止 (如果佔用 3002 埠)
-netstat -ano | findstr :3002
-powershell "Stop-Process -Id [PID] -Force"
+npm start       # 生產模式啟動
+npm run dev     # 開發模式 (同 server)
+npm run server  # 啟動 Express 伺服器
+npm run build:css   # 編譯 SCSS 樣式
+npm run watch:css   # 監控 SCSS 變化
 ```
 
 ## 🔌 API 架構
 
-### 核心端點
-- `POST /chat` - 主要聊天介面，支援 maxRounds 參數
-- `GET /test-notion` - Notion API 連線測試
-- `GET /health` - 伺服器健康檢查
-- `GET /api-status` - API Keys 狀態監控
+### 核心端點 (加上 /api 前綴)
+- `POST /api/chat` - 主要聊天介面，支援 maxRounds 參數
+- `GET /api/test-notion` - Notion API 連線測試
+- `GET /api/health` - 伺服器健康檢查
+- `GET /api/api-status` - API Keys 狀態監控
 
 ### 請求格式
 ```javascript
@@ -130,6 +127,32 @@ powershell "Stop-Process -Id [PID] -Force"
 }
 ```
 
+### SPA 路由處理
+- 所有非 `/api` 路由都返回 `public/index.html`
+- 支援前端路由和直接 URL 存取
+
+## 🌐 Render 部署
+
+### 自動部署配置
+- **Repository**: https://github.com/Qoo143/notion-chat-app.git
+- **Branch**: master
+- **Auto Deploy**: 是的，推送到 master 分支會觸發自動部署
+- **Build Command**: `npm install`
+- **Start Command**: `npm start`
+
+### 部署流程
+1. **本地開發** → 測試功能
+2. **Git 提交** → `git push origin master`
+3. **自動觸發** → Render 檢測推送
+4. **建置部署** → 執行 `npm install` 和 `npm start`
+5. **服務上線** → 更新完成
+
+### 環境變數 (Render Dashboard)
+必須在 Render 設定：
+- `NOTION_TOKEN`
+- `GEMINI_API_KEY`
+- `NODE_ENV=production`
+
 ## ⚠️ 重要限制與注意事項
 
 ### Notion API 限制
@@ -139,63 +162,94 @@ powershell "Stop-Process -Id [PID] -Force"
 - **權限要求**: Integration 需正確分享至目標頁面
 
 ### 技術架構限制
-- **本地部署**: 需同時運行 Express 伺服器 (3002 埠)
-- **單用戶設計**: 無會話管理，無歷史記錄保存
+- **Web 應用**: 純網頁應用，已移除 Electron 架構
+- **多用戶設計**: 支援多用戶同時使用
 - **同步處理**: 無並行請求支援
-- **桌面限制**: Electron 應用，非 Web 版本
+- **雲端部署**: 運行於 Render 平台
 
 ### 環境依賴
-- **Node.js**: >= 16.0.0
+- **Node.js**: >= 18.0.0
 - **網路連線**: 依賴外部 API (Notion + Gemini)
 - **API 配額**: Gemini AI 有每日限制
+- **部署平台**: 依賴 Render 雲端服務
 
 ## 🛠 常見開發任務
 
 ### 新增 API 端點
-在 `server/index.js` 中新增路由，使用 `asyncHandler` 包裝
+在 `routes/` 目錄中新增路由模組，使用 `asyncHandler` 包裝
 
 ### 修改搜尋邏輯
 編輯 `services/searchService.js`，調整 `performDynamicSearch` 函式
 
 ### 調整意圖分析
-修改 `config/intentAnalysis.js` 關鍵詞或 `server/index.js` 中的 `analyzeUserIntent`
+修改 `config/intentAnalysis.js` 關鍵詞或路由中的 `analyzeUserIntent`
 
 ### 更新 UI 介面
-編輯 `src/renderer/` 下的 HTML/CSS/JS 檔案
+編輯 `public/` 下的 HTML/CSS/JS 檔案
+
+### 樣式開發
+1. 編輯 `public/scss/` 下的 SCSS 檔案
+2. 使用 `npm run watch:css` 監控變化
+3. 編譯後的 CSS 會輸出到 `public/css/`
 
 ### 新增配置選項
-在 `config/` 目錄建立模組，並在 `config/index.js` 中匯出
+在 `config/` 目錄建立模組，並適當匯出
 
 ## 🔍 除錯與故障排除
 
 ### 常見問題
-1. **GPU 程序錯誤**: Electron GPU 相關警告，通常無害，可忽略
-2. **埠號佔用**: 使用程序管理指令強制終止
-3. **API Token 無效**: 檢查 .env 檔案中的 token 格式與權限
-4. **搜尋無結果**: 確認 Notion Integration 已正確分享至目標頁面
+1. **部署失敗**: 檢查環境變數是否正確設定
+2. **API Token 無效**: 檢查 .env 檔案中的 token 格式與權限
+3. **搜尋無結果**: 確認 Notion Integration 已正確分享至目標頁面
+4. **CSS 樣式問題**: 確保 SCSS 已正確編譯
 
 ### 日誌檢查
-- 後端日誌：在 `npm run dev` 的終端中查看
-- 前端日誌：開啟 DevTools (開發模式自動開啟)
+- **本地開發**: 在 `npm run dev` 的終端中查看
+- **Render 部署**: 在 Render Dashboard 的 Logs 頁面查看
+- **前端除錯**: 使用瀏覽器開發者工具
 
 ### 配置驗證
 啟動時會自動驗證環境變數，失敗會顯示具體錯誤信息
 
 ## 🚀 部署準備
 
-### 檢查清單
-- [ ] Node.js >= 16.0.0
-- [ ] 埠號 3002 可用
+### 本地開發檢查清單
+- [ ] Node.js >= 18.0.0
+- [ ] 埠號 3002 可用 (可調整)
 - [ ] Notion Integration Token 有效 (ntn_ 前綴)
 - [ ] Gemini API Key 有效 (AIzaSy 前綴)
 - [ ] 網路連線穩定
 - [ ] Notion 工作區權限正確
 
-### 建置輸出
-`npm run build` 會在 `dist/` 目錄產生桌面應用安裝檔
+### Render 部署檢查清單
+- [ ] GitHub Repository 已連結
+- [ ] 環境變數已在 Render Dashboard 設定
+- [ ] Auto Deploy 已啟用
+- [ ] Build 和 Start 命令正確
+- [ ] 服務域名已設定
+
+### 部署測試
+1. **本地測試**: `npm start` 確保功能正常
+2. **推送代碼**: `git push origin master`
+3. **監控部署**: 在 Render Dashboard 查看部署狀態
+4. **驗證服務**: 確認部署的網站功能正常
+5. **API 測試**: 測試 `/api/health` 和 `/api/test-notion`
 
 ---
 
-**最後更新**: 2025-09-12
-**版本**: 1.0.0
-**狀態**: 穩定版本，核心功能完整
+**最後更新**: 2025-09-13
+**版本**: 2.0.0 (Web Application)
+**狀態**: 已部署至 Render，支援自動部署更新
+
+## 🔄 自動部署確認
+
+**是的，你的專案支援自動部署！**
+
+當你執行 `git push origin master` 推送更新到 GitHub 時：
+1. Render 會自動檢測到 master 分支的變更
+2. 觸發新的部署流程
+3. 執行 `npm install` 安裝依賴
+4. 執行 `npm start` 啟動服務
+5. 部署完成後更新線上服務
+
+你可以在 Render Dashboard 監控整個部署過程和狀態。

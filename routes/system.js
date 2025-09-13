@@ -10,10 +10,10 @@ const { asyncHandler } = require('../middleware/errorHandler');
 
 /**
  * 健康檢查端點
- * GET /health
+ * GET /system/health
  * 返回伺服器狀態和環境資訊
  */
-router.get('/health', (req, res) => {
+router.get('/system/health', (req, res) => {
   res.json({
     status: 'OK',
     timestamp: new Date().toISOString(),
@@ -26,11 +26,11 @@ router.get('/health', (req, res) => {
 });
 
 /**
- * API Keys 狀態檢查端點  
- * GET /api-status
+ * API Keys 狀態檢查端點
+ * GET /system/status
  * 返回 Gemini API Keys 的詳細狀態
  */
-router.get('/api-status', (req, res) => {
+router.get('/system/status', (req, res) => {
   res.json({
     success: true,
     geminiKeys: geminiService.getStatus(),
@@ -41,10 +41,10 @@ router.get('/api-status', (req, res) => {
 
 /**
  * 測試 Notion API 連線
- * GET /test-notion  
+ * GET /system/test
  * 執行基本搜尋測試 Notion API 連線狀態
  */
-router.get('/test-notion', asyncHandler(async (req, res) => {
+router.get('/system/test', asyncHandler(async (req, res) => {
   try {
     logger.info('測試 Notion API 連線...');
     

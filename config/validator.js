@@ -40,8 +40,9 @@ class ConfigValidator {
       throw new Error(`PORT must be a number, got: ${portStr}`);
     }
     
-    if (port < 1024 || port > 65535) {
-      throw new Error(`PORT must be between 1024 and 65535, got: ${port}`);
+    // Render 等雲端平台可能使用任何埠號，放寬限制
+    if (port < 1 || port > 65535) {
+      throw new Error(`PORT must be between 1 and 65535, got: ${port}`);
     }
     
     return port;
