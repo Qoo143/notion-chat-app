@@ -90,9 +90,12 @@ jspm_packages/
 .nuxt
 dist
 
-# Gatsby files
+# Gatsby files (注意: 我們的 public/ 目錄需要被追蹤，因為包含前端檔案)
 .cache/
-public
+# public  # 已註解，因為我們需要追蹤 public/ 目錄
+
+# 但排除編譯後的 CSS (因為是從 SCSS 編譯來的)
+public/css/
 
 # Storybook build outputs
 .out

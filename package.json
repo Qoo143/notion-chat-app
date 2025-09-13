@@ -1,20 +1,20 @@
 {
   "name": "notion-chat-app",
   "version": "1.0.0",
-  "description": "Desktop chat app with Notion API integration",
-  "main": "src/main.js",
+  "description": "Web chat app with Notion API integration",
+  "main": "server/index.js",
   "scripts": {
-    "start": "electron .",
-    "dev": "concurrently \"npm run server\" \"electron .\"",
+    "start": "node server/index.js",
+    "dev": "npm run server",
     "server": "node server/index.js",
-    "build": "electron-builder"
+    "build:css": "sass public/scss:public/css",
+    "watch:css": "sass --watch public/scss:public/css"
   },
-  "keywords": ["electron", "notion", "chat", "gemini"],
+  "keywords": ["web", "notion", "chat", "gemini"],
   "author": "Developer",
   "license": "MIT",
   "devDependencies": {
-    "electron": "^27.0.0",
-    "electron-builder": "^24.6.4",
+    "sass": "^1.69.0",
     "concurrently": "^8.2.2"
   },
   "dependencies": {

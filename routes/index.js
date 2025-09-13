@@ -9,15 +9,16 @@ const systemRoutes = require('./system');  // 系統狀態路由
 /**
  * 註冊所有路由到 Express 應用
  * @param {Express} app - Express 應用實例
+ * @param {string} prefix - API 路由前綴，預設為空字串
  */
-function registerRoutes(app) {
+function registerRoutes(app, prefix = '') {
   // 註冊路由模組
-  app.use('/chat', chatRoutes);    // POST /chat
-  app.use('/', systemRoutes);      // GET /health, /api-status, /test-notion
+  app.use(`${prefix}/chat`, chatRoutes);    // POST /api/chat
+  app.use(`${prefix}`, systemRoutes);       // GET /api/health, /api/api-status, /api/test-notion
   
   // 可以在這裡添加更多路由模組
-  // app.use('/api', apiRoutes);
-  // app.use('/admin', adminRoutes);
+  // app.use(`${prefix}/users`, userRoutes);
+  // app.use(`${prefix}/admin`, adminRoutes);
 }
 
 module.exports = {

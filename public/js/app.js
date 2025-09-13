@@ -1,5 +1,3 @@
-// 透過 preload 腳本安全地存取 Electron API
-
 class ChatApp {
     constructor() {
         this.messageInput = document.getElementById('messageInput');
@@ -10,15 +8,14 @@ class ChatApp {
         this.searchModeSelect = document.getElementById('searchModeSelect');
         this.costIndicator = document.getElementById('costIndicator');
         
-        // 配置會在 init 中載入
-        this.config = null;
+        this.config = {
+            apiBaseUrl: ''  // 使用相對路徑，因為前後端同域
+        };
         
         this.init();
     }
 
     async init() {
-        // 載入配置
-        await this.loadConfig();
         
         // 設置歡迎訊息時間
         document.getElementById('welcomeTime').textContent = this.formatTime(new Date());
@@ -42,22 +39,12 @@ class ChatApp {
         this.checkServerStatus();
     }
 
-    async loadConfig() {
-        try {
-            this.config = await window.electronAPI.getConfig();
-            console.log('配置載入成功:', this.config);
-        } catch (error) {
-            console.error('配置載入失敗:', error);
-            // 使用預設配置
-            this.config = { apiBaseUrl: 'http://localhost:3002' };
-        }
-    }
 
     async checkServerStatus() {
         this.updateStatus('connecting', '檢查連線...');
         
         try {
-            const healthUrl = `${this.config.apiBaseUrl}/health`;
+            const healthUrl = `${this.config.apiBaseUrl}/api/health`;
             console.log('檢查伺服器狀態:', healthUrl);
             const response = await fetch(healthUrl);
             if (response.ok) {
@@ -130,18 +117,24 @@ class ChatApp {
             const maxRounds = parseInt(this.searchModeSelect.value);
             
             // 發送到後端（包含搜尋模式參數）
-            const result = await window.electronAPI.sendMessage({ message, maxRounds });
+            const response = await axios.post(`${this.config.apiBaseUrl}/api/chat`, { 
+                message, 
+                maxRounds 
+            });
             
             // 移除載入訊息
             this.removeMessage(loadingMessage);
             
-            if (result.success) {
+            // axios 回應的 response.data 就是後端回應本體
+            const data = response.data;
+            
+            if (data && data.success) {
                 // 顯示回覆
-                let messageContent = result.data.response;
+                let messageContent = data.response;
                 
                 // 如果有API統計資訊，添加到回覆末尾
-                if (result.data.apiStats) {
-                    const stats = result.data.apiStats;
+                if (data.apiStats) {
+                    const stats = data.apiStats;
                     messageContent += `\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
                     messageContent += `📊 **API 調用統計**\n`;
                     messageContent += `• Notion API: ${stats.notionCalls} 次\n`;
@@ -150,9 +143,9 @@ class ChatApp {
                     messageContent += `• 處理時間: ${stats.duration} 秒`;
                     
                     // 如果有輪數資訊，也顯示
-                    if (result.data.rounds && Array.isArray(result.data.rounds)) {
-                        const maxRounds = result.data.maxRounds || '未知';
-                        const actualRounds = result.data.actualRounds || result.data.rounds.length;
+                    if (data.rounds && Array.isArray(data.rounds)) {
+                        const maxRounds = data.maxRounds || '未知';
+                        const actualRounds = data.actualRounds || data.rounds.length;
                         messageContent += `\n• 搜索設定: ${maxRounds} 輪最大`;
                         messageContent += `\n• 實際執行: ${actualRounds} 輪`;
                     }
@@ -161,15 +154,23 @@ class ChatApp {
                 this.addMessage(messageContent, 'bot');
                 this.updateStatus('ready', '已連線');
             } else {
-                // 顯示錯誤
-                this.addMessage(`錯誤：${result.error}`, 'bot', true);
+                // 處理非成功回應
+                this.addMessage(`錯誤：${data?.error || '未知錯誤'}`, 'bot', true);
                 this.updateStatus('error', '請求失敗');
             }
             
         } catch (error) {
             // 移除載入訊息並顯示錯誤
             this.removeMessage(loadingMessage);
-            this.addMessage('發送訊息時發生錯誤，請檢查網路連線', 'bot', true);
+            
+            let errorMessage = '發送訊息時發生錯誤';
+            if (error.response?.data?.error) {
+                errorMessage = error.response.data.error;
+            } else if (error.message) {
+                errorMessage = error.message;
+            }
+            
+            this.addMessage(`錯誤：${errorMessage}`, 'bot', true);
             this.updateStatus('error', '連線錯誤');
             console.error('發送訊息錯誤:', error);
         }

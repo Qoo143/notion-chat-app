@@ -1,6 +1,7 @@
 // 外部依賴模組
 const express = require('express');             // Web 應用框架
 const cors = require('cors');                   // 跨域資源共享中間件
+const path = require('path');                   // 路徑處理工具
 require('dotenv').config();                     // 環境變數載入
 
 // 內部模組引入
@@ -31,10 +32,22 @@ setupProcessErrorHandling();
 app.use(cors());
 app.use(express.json());
 
+// 靜態檔案服務 (提供前端檔案)
+app.use(express.static(path.join(__dirname, '../public')));
+
 // ================================================================
-// 路由註冊
+// API 路由註冊 (加上 /api 前綴)
 // ================================================================
-registerRoutes(app);
+registerRoutes(app, '/api');
+
+// ================================================================
+// SPA fallback - 所有非 API 路由都返回 index.html
+// ================================================================
+app.get('*', (req, res) => {
+  if (!req.path.startsWith('/api')) {
+    res.sendFile(path.join(__dirname, '../public/index.html'));
+  }
+});
 
 // ================================================================
 // 錯誤處理中間件 (必須放在所有路由之後)
