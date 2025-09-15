@@ -98,9 +98,19 @@ async function analyzeUserIntent(message, apiCounter) {
     如果是search意圖，請提供3個最適合的關鍵詞用於Notion頁面標題搜索。
 
     ⚠️ **重要:Notion API 搜尋限制**
-    - 只搜尋頁面標題，不搜尋內容
-    - 關鍵詞必須可能出現在標題中
-    - 優先選擇名詞、技術術語、專案名稱
+    - 只搜尋頁面標題，不搜尋內容（部分匹配，最多100結果）
+    - 關鍵詞必須簡短、核心，避免複合詞或長句
+    - 優先順序：英文技術術語 > 繁體中文核心詞 > 專案名稱
+    
+    📋 **關鍵詞生成原則**：
+    - 使用1-2個字的核心概念（如：繼承 → "Inheritance", "繼承"）
+    - 技術主題優先用英文術語（JavaScript → "JavaScript", "JS"）
+    - 避免複合描述詞（不要："原型繼承模式"，要："Prototype", "繼承"）
+    
+    💡 **範例**：
+    - 用戶問"javascript繼承" → ["JavaScript", "Inheritance", "繼承"]
+    - 用戶問"react hooks用法" → ["React", "Hooks", "Hook"]
+    - 用戶問"資料庫設計" → ["Database", "資料庫", "設計"]
 
     只回覆JSON，不要其他文字。
     `;
