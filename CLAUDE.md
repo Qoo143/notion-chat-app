@@ -14,8 +14,9 @@ Read README.md
 
 該區塊包含：
 - 專案架構與技術堆疊
-- 關鍵檔案位置與服務
+- 5關鍵字搜尋策略與 AI 篩選機制
 - API 端點與環境變數
+- Notion 工作區 URL 修正功能
 - 意圖類型與使用限制
 - 開發指令與部署資訊
 
@@ -65,15 +66,17 @@ Read README.md
 
 ## 🎯 核心功能系統
 
-### 智慧意圖分析 (server/index.js)
+### 智慧意圖分析 (routes/chat.js)
 - **支援類型**: greeting、search、chat
 - **AI 驅動**: 使用 Gemini 分析用戶意圖與關鍵詞
-- **配置位置**: config/intentAnalysis.js
+- **關鍵字生成**: 每次生成5個最適合的關鍵字
 
 ### 多輪搜尋引擎 (services/searchService.js)
 - **搜尋模式**: 1-3 輪可調節搜尋深度
-- **策略**: 基本搜尋 → 關鍵詞優化 → 擴展搜尋
-- **限制**: 僅支援 Notion 標題搜尋，不支援內容全文搜尋
+- **搜尋規模**: 5關鍵字 × 100結果 = 最多500個頁面
+- **策略**: 原始5關鍵字 → AI優化關鍵字 → AI擴展關鍵字
+- **去重機制**: 自動用 Map 結構去除重複頁面
+- **AI 篩選**: Gemini 從所有結果中選5個最相關頁面
 
 ### Notion API 整合 (services/notionService.js)
 - **功能**: 頁面搜尋、內容提取、遞歸處理
@@ -90,7 +93,8 @@ Read README.md
 ### 環境變數 (.env)
 ```bash
 # 必要設定
-NOTION_TOKEN=ntn_your_token        # 支援 ntn_ 前綴 (已修正 validator.js)
+NOTION_TOKEN=ntn_your_token        # 支援 ntn_ 前綴
+NOTION_WORKSPACE_ID=workspace-id   # 工作區 ID，用於修正 URL 格式
 GEMINI_API_KEY=AIzaSy_your_key     # 主要 API Key
 GEMINI_API_KEY_2=...               # 備用 Key (可選)
 GEMINI_API_KEY_3=...               # 備用 Key (可選)
@@ -157,8 +161,10 @@ npm run watch:css   # 監控 SCSS 變化
 
 ### Notion API 限制
 - **搜尋範圍**: 僅標題搜尋，無內容全文搜尋
+- **單次搜尋**: 每個關鍵字最多 100 個結果 (API 固定限制)
+- **總搜尋量**: 5關鍵字 × 100 = 最多 500 個頁面
 - **速率限制**: 350ms 間隔，避免 429 錯誤
-- **結果限制**: 每次最多 10 個頁面
+- **AI 篩選**: 最終選擇 5 個最相關頁面進行內容提取
 - **權限要求**: Integration 需正確分享至目標頁面
 
 ### 技術架構限制

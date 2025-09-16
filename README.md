@@ -16,10 +16,10 @@
 
 ### ✨ 核心特色
 
-- 🔍 **智慧搜尋**: 多輪搜尋策略，從快速到精確的可調節搜尋深度
+- 🔍 **智慧搜尋**: 5關鍵字多輪搜尋策略，可達500頁面搜尋範圍，AI智慧篩選
 - 🧠 **意圖分析**: AI 自動分析用戶意圖 (問候/搜尋/對話)
-- 📚 **深度整合**: 完整的 Notion 頁面內容提取與格式保留
-- ⚡ **高效能**: 多 API Key 輪替，智慧錯誤處理
+- 📚 **深度整合**: 完整的 Notion 頁面內容提取，支援3層遞歸處理
+- ⚡ **高效能**: 多 API Key 輪替，智慧錯誤處理，自動去重
 - 🎨 **現代 UI**: 直觀的聊天介面，即時狀態回饋，大地色系設計
 - 🌐 **Web 應用**: 直接在瀏覽器中使用，無需安裝任何軟體
 
@@ -127,6 +127,7 @@ graph TB
 ```bash
 # Notion API 設定 (必須)
 NOTION_TOKEN=ntn_your_notion_integration_token
+NOTION_WORKSPACE_ID=your-workspace-id      # 可選，用於修正 URL 格式
 
 # Gemini API 設定 - 支援多 Key 輪替 (必須)
 GEMINI_API_KEY=AIzaSy_your_primary_key
@@ -183,9 +184,9 @@ NODE_ENV=production          # 生產環境
 
 1. **開啟網頁**: 前往部署的 URL 或本地 `http://localhost:3002`
 2. **選擇搜尋模式**:
-   - 單循環 (快速) - 基本搜尋
-   - 雙循環 (平衡) - 優化搜尋
-   - 三循環 (精確) - 深度搜尋
+   - 1輪搜尋 (快速) - 使用原始5個關鍵字搜尋
+   - 2輪搜尋 (平衡) - 原始 + AI優化關鍵字
+   - 3輪搜尋 (精確) - 原始 + 優化 + AI擴展關鍵字
 3. **輸入查詢**: 使用自然語言描述你要找的內容
 4. **查看結果**: AI 會分析並回傳相關的 Notion 頁面和智慧回應
 
@@ -290,9 +291,10 @@ notion-chat-app/
 ### ⚠️ Notion API 限制
 
 - **搜尋範圍**: 僅支援頁面標題搜尋，不支援內容全文搜尋
+- **關鍵字策略**: 每輪使用5個關鍵字，每個關鍵字最多100個結果
+- **搜尋規模**: 最多500個頁面搜尋結果，自動去重後由AI選5個最相關
 - **速率限制**: 每次請求間隔 350ms，避免觸發限制
 - **權限要求**: 需要正確的 Integration 設定和頁面存取權限
-- **回傳限制**: 每次搜尋最多回傳 10 個結果
 
 ### 🤖 Gemini AI 限制
 
@@ -370,7 +372,7 @@ config_system: "config/ directory with modular configuration"
 
 environment_vars:
   required: ["NOTION_TOKEN", "GEMINI_API_KEY"]
-  optional: ["GEMINI_API_KEY_2", "GEMINI_API_KEY_3", "PORT", "HOST", "NODE_ENV"]
+  optional: ["NOTION_WORKSPACE_ID", "GEMINI_API_KEY_2", "GEMINI_API_KEY_3", "PORT", "HOST", "NODE_ENV"]
 
 intent_types: ["greeting", "search", "chat"]
 search_modes: [1, 2, 3]  # rounds of search
@@ -378,7 +380,7 @@ search_modes: [1, 2, 3]  # rounds of search
 limitations:
   notion_api: "title_search_only"
   rate_limit: "350ms_between_requests"
-  max_results: 10
+  max_results: 5  # AI selected from up to 500 raw results (5 keywords × 100 each)
   content_depth: 3
 
 development_commands:

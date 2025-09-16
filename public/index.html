@@ -53,6 +53,67 @@
         </div>
     </div>
 
+    <!-- 歡迎彈窗 -->
+    <div class="welcome-overlay" id="welcomeOverlay">
+        <div class="welcome-modal">
+            <div class="welcome-header">
+                <h2>👋 歡迎使用 Notion 聊天助手</h2>
+                <button class="close-button" id="closeWelcome" aria-label="關閉彈窗">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                        <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                </button>
+            </div>
+
+            <div class="welcome-content">
+                <div class="welcome-intro">
+                    <p>🤖 我是您的智慧搜尋助手，可以幫您快速找到 Notion 工作區中的筆記和資料！</p>
+                </div>
+
+                <div class="welcome-features">
+                    <h3>✨ 我能為您做什麼：</h3>
+                    <ul>
+                        <li>
+                            <span class="feature-icon">🔍</span>
+                            <strong>智慧搜尋</strong> - 用自然語言搜尋您的 Notion 筆記
+                        </li>
+                        <li>
+                            <span class="feature-icon">🧠</span>
+                            <strong>AI 分析</strong> - 自動分析並整理相關資料
+                        </li>
+                        <li>
+                            <span class="feature-icon">📚</span>
+                            <strong>深度整合</strong> - 提供完整的頁面內容和直接連結
+                        </li>
+                        <li>
+                            <span class="feature-icon">⚡</span>
+                            <strong>多種模式</strong> - 選擇快速、平衡或精確搜尋模式
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="welcome-examples">
+                    <h3>💬 試試看這些問題：</h3>
+                    <div class="example-queries">
+                        <button class="example-query" data-query="找一下 JavaScript 相關的筆記">
+                            "找一下 JavaScript 相關的筆記"
+                        </button>
+                        <button class="example-query" data-query="有沒有專案管理的文件？">
+                            "有沒有專案管理的文件？"
+                        </button>
+                        <button class="example-query" data-query="幫我查找會議記錄">
+                            "幫我查找會議記錄"
+                        </button>
+                    </div>
+                </div>
+
+                <div class="welcome-footer">
+                    <button class="start-button" id="startChatting">開始對話 🚀</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://unpkg.com/axios@1.6.0/dist/axios.min.js"></script>
     <script src="js/app.js"></script>
 </body>

@@ -12,11 +12,11 @@ module.exports = {
   // 搜尋策略設定
   search: {
     rounds: 3,              // 三輪搜尋策略
-    maxKeywords: 3,         // 每輪最大關鍵詞數量
+    maxKeywords: 5,         // 每輪最大關鍵詞數量
     keywordLimits: {
-      initial: 3,
-      optimize: 3,
-      expand: 3
+      initial: 5,
+      optimize: 5,
+      expand: 5
     }
   }
 };

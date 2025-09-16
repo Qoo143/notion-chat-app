@@ -74,11 +74,17 @@ class NotionService {
       const page = await this.client.pages.retrieve({ page_id: pageId });
       apiCounter.incrementNotion();
 
-      let title = '';
-      if (page.properties && page.properties.title) {
-        title = page.properties.title.title?.[0]?.plain_text || '未命名頁面';
-      } else {
-        title = '未命名頁面';
+      let title = '未命名頁面';
+
+      if (page.properties) {
+        // 尋找標題屬性 (與 extractPageInfo 使用相同的邏輯)
+        const titleProperty = Object.values(page.properties).find(
+          prop => prop.type === 'title'
+        );
+
+        if (titleProperty?.title?.[0]?.plain_text) {
+          title = titleProperty.title[0].plain_text;
+        }
       }
 
       // 獲取頁面內容區塊
@@ -91,11 +97,19 @@ class NotionService {
       // 遞歸提取所有區塊內容
       const content = await this.extractAllBlocksContent(blocks.results, apiCounter);
 
+      // 修復 URL - 插入工作區標識符（如果已配置）
+      let fixedUrl = page.url;
+      const workspaceId = config.notion.workspaceId;
+
+      if (workspaceId && fixedUrl && fixedUrl.startsWith('https://www.notion.so/') && !fixedUrl.includes(`/${workspaceId}/`)) {
+        fixedUrl = fixedUrl.replace('https://www.notion.so/', `https://www.notion.so/${workspaceId}/`);
+      }
+
       return {
         pageId,
         title,
         content,
-        url: page.url
+        url: fixedUrl
       };
     } catch (error) {
       logger.error(`獲取頁面內容失敗:`, error.message);
@@ -294,10 +308,18 @@ class NotionService {
       }
     }
 
+    // 修復 URL - 插入工作區標識符（如果已配置）
+    let fixedUrl = page.url;
+    const workspaceId = config.notion.workspaceId;
+    
+    if (workspaceId && fixedUrl && fixedUrl.startsWith('https://www.notion.so/') && !fixedUrl.includes(`/${workspaceId}/`)) {
+      fixedUrl = fixedUrl.replace('https://www.notion.so/', `https://www.notion.so/${workspaceId}/`);
+    }
+
     return {
       pageId: page.id,
       title: title,
-      url: page.url,
+      url: fixedUrl,
       lastEdited: page.last_edited_time,
       createdTime: page.created_time
     };

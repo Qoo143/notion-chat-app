@@ -17,10 +17,10 @@ class ChatApp {
     }
 
     async init() {
-        
+
         // 設置歡迎訊息時間
         document.getElementById('welcomeTime').textContent = this.formatTime(new Date());
-        
+
         // 綁定事件監聽器
         this.sendButton.addEventListener('click', () => this.sendMessage());
         this.messageInput.addEventListener('keypress', (e) => {
@@ -29,13 +29,13 @@ class ChatApp {
                 this.sendMessage();
             }
         });
-        
-        // 自動聚焦到輸入框
-        this.messageInput.focus();
-        
+
+        // 初始化歡迎彈窗
+        this.initWelcomeModal();
+
         // 初始化搜尋模式選擇器
         this.initSearchModeSelector();
-        
+
         // 檢查伺服器狀態
         this.checkServerStatus();
     }
@@ -144,7 +144,6 @@ class ChatApp {
                 // 如果有API統計資訊，添加到回覆末尾
                 if (data.apiStats) {
                     const stats = data.apiStats;
-                    messageContent += `\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
                     messageContent += `📊 **API 調用統計**\n`;
                     messageContent += `• Notion API: ${stats.notionCalls} 次\n`;
                     messageContent += `• Gemini AI: ${stats.geminiCalls} 次\n`;
@@ -163,9 +162,10 @@ class ChatApp {
                 this.addMessage(messageContent, 'bot');
                 this.updateStatus('ready', '已連線');
             } else {
-                // 處理非成功回應
-                this.addMessage(`錯誤：${data?.error || '未知錯誤'}`, 'bot', true);
-                this.updateStatus('error', '請求失敗');
+                // 處理非成功回應 - 顯示搜尋失敗的詳細訊息
+                const failureMessage = data?.response || data?.error || '未知錯誤';
+                this.addMessage(failureMessage, 'bot');
+                this.updateStatus('ready', '搜尋完成（無合適結果）');
             }
             
         } catch (error) {
@@ -226,7 +226,7 @@ class ChatApp {
         const contentDiv = document.createElement('div');
         contentDiv.className = 'message-content loading-message';
         contentDiv.innerHTML = `
-            正在搜尋...
+            正在搜尋
             <div class="loading-dots">
                 <span></span>
                 <span></span>
@@ -330,9 +330,9 @@ class ChatApp {
         }
         
         // 9. 將 URL 轉換為可點擊的連結（放在最後以避免干擾其他格式）
-        const urlRegex = /(https?:\/\/[^\s<>\)]+)/g;
+        const urlRegex = /(https?:\/\/[^\s<>\)）]+)/g;
         processed = processed.replace(urlRegex, (url) => {
-            const cleanUrl = url.replace(/[.,;!?)]+$/, '');
+            const cleanUrl = url.replace(/[.,;!?)\)）]+$/, '');
             return `<a href="${cleanUrl}" class="notion-link" target="_blank">${cleanUrl}</a>`;
         });
         if (this.config.isDevelopment) {
@@ -370,6 +370,75 @@ class ChatApp {
         setTimeout(() => {
             this.chatMessages.scrollTop = this.chatMessages.scrollHeight;
         }, 100);
+    }
+
+    initWelcomeModal() {
+        const welcomeOverlay = document.getElementById('welcomeOverlay');
+        const closeButton = document.getElementById('closeWelcome');
+        const startButton = document.getElementById('startChatting');
+        const exampleQueries = document.querySelectorAll('.example-query');
+
+        // 檢查是否是首次訪問
+        const hasVisited = localStorage.getItem('notion-chat-visited');
+        if (!hasVisited) {
+            // 延遲顯示彈窗，確保頁面完全載入
+            setTimeout(() => {
+                welcomeOverlay.classList.add('show');
+            }, 500);
+        } else {
+            // 如果已經訪問過，直接聚焦輸入框
+            this.messageInput.focus();
+        }
+
+        // 關閉按鈕事件
+        closeButton.addEventListener('click', () => {
+            this.closeWelcomeModal();
+        });
+
+        // 開始對話按鈕事件
+        startButton.addEventListener('click', () => {
+            this.closeWelcomeModal();
+        });
+
+        // 點擊遮罩層關閉彈窗
+        welcomeOverlay.addEventListener('click', (e) => {
+            if (e.target === welcomeOverlay) {
+                this.closeWelcomeModal();
+            }
+        });
+
+        // ESC 鍵關閉彈窗
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && welcomeOverlay.classList.contains('show')) {
+                this.closeWelcomeModal();
+            }
+        });
+
+        // 範例查詢點擊事件
+        exampleQueries.forEach(button => {
+            button.addEventListener('click', () => {
+                const query = button.getAttribute('data-query');
+                this.messageInput.value = query;
+                this.closeWelcomeModal();
+                // 自動發送查詢
+                setTimeout(() => {
+                    this.sendMessage();
+                }, 300);
+            });
+        });
+    }
+
+    closeWelcomeModal() {
+        const welcomeOverlay = document.getElementById('welcomeOverlay');
+        welcomeOverlay.classList.remove('show');
+
+        // 標記已訪問
+        localStorage.setItem('notion-chat-visited', 'true');
+
+        // 聚焦輸入框
+        setTimeout(() => {
+            this.messageInput.focus();
+        }, 300);
     }
 }
 
