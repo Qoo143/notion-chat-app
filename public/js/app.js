@@ -17,10 +17,10 @@ class ChatApp {
     }
 
     async init() {
-        
+
         // 設置歡迎訊息時間
         document.getElementById('welcomeTime').textContent = this.formatTime(new Date());
-        
+
         // 綁定事件監聽器
         this.sendButton.addEventListener('click', () => this.sendMessage());
         this.messageInput.addEventListener('keypress', (e) => {
@@ -29,13 +29,13 @@ class ChatApp {
                 this.sendMessage();
             }
         });
-        
-        // 自動聚焦到輸入框
-        this.messageInput.focus();
-        
+
+        // 初始化歡迎彈窗
+        this.initWelcomeModal();
+
         // 初始化搜尋模式選擇器
         this.initSearchModeSelector();
-        
+
         // 檢查伺服器狀態
         this.checkServerStatus();
     }
@@ -357,6 +357,75 @@ class ChatApp {
         setTimeout(() => {
             this.chatMessages.scrollTop = this.chatMessages.scrollHeight;
         }, 100);
+    }
+
+    initWelcomeModal() {
+        const welcomeOverlay = document.getElementById('welcomeOverlay');
+        const closeButton = document.getElementById('closeWelcome');
+        const startButton = document.getElementById('startChatting');
+        const exampleQueries = document.querySelectorAll('.example-query');
+
+        // 檢查是否是首次訪問
+        const hasVisited = localStorage.getItem('notion-chat-visited');
+        if (!hasVisited) {
+            // 延遲顯示彈窗，確保頁面完全載入
+            setTimeout(() => {
+                welcomeOverlay.classList.add('show');
+            }, 500);
+        } else {
+            // 如果已經訪問過，直接聚焦輸入框
+            this.messageInput.focus();
+        }
+
+        // 關閉按鈕事件
+        closeButton.addEventListener('click', () => {
+            this.closeWelcomeModal();
+        });
+
+        // 開始對話按鈕事件
+        startButton.addEventListener('click', () => {
+            this.closeWelcomeModal();
+        });
+
+        // 點擊遮罩層關閉彈窗
+        welcomeOverlay.addEventListener('click', (e) => {
+            if (e.target === welcomeOverlay) {
+                this.closeWelcomeModal();
+            }
+        });
+
+        // ESC 鍵關閉彈窗
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && welcomeOverlay.classList.contains('show')) {
+                this.closeWelcomeModal();
+            }
+        });
+
+        // 範例查詢點擊事件
+        exampleQueries.forEach(button => {
+            button.addEventListener('click', () => {
+                const query = button.getAttribute('data-query');
+                this.messageInput.value = query;
+                this.closeWelcomeModal();
+                // 自動發送查詢
+                setTimeout(() => {
+                    this.sendMessage();
+                }, 300);
+            });
+        });
+    }
+
+    closeWelcomeModal() {
+        const welcomeOverlay = document.getElementById('welcomeOverlay');
+        welcomeOverlay.classList.remove('show');
+
+        // 標記已訪問
+        localStorage.setItem('notion-chat-visited', 'true');
+
+        // 聚焦輸入框
+        setTimeout(() => {
+            this.messageInput.focus();
+        }, 300);
     }
 }
 
