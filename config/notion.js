@@ -1,5 +1,8 @@
 // Notion API 配置
 module.exports = {
+  // 工作區設定
+  workspaceId: process.env.NOTION_WORKSPACE_ID || '',  // 工作區標識符，用於修正 URL
+  
   // 搜尋設定
   search: {
     pageSize: 100,          // 每個關鍵詞的搜尋結果數 (Notion API 最大限制)

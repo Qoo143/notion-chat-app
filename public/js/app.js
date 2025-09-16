@@ -163,9 +163,10 @@ class ChatApp {
                 this.addMessage(messageContent, 'bot');
                 this.updateStatus('ready', '已連線');
             } else {
-                // 處理非成功回應
-                this.addMessage(`錯誤：${data?.error || '未知錯誤'}`, 'bot', true);
-                this.updateStatus('error', '請求失敗');
+                // 處理非成功回應 - 顯示搜尋失敗的詳細訊息
+                const failureMessage = data?.response || data?.error || '未知錯誤';
+                this.addMessage(failureMessage, 'bot');
+                this.updateStatus('ready', '搜尋完成（無合適結果）');
             }
             
         } catch (error) {
@@ -226,7 +227,7 @@ class ChatApp {
         const contentDiv = document.createElement('div');
         contentDiv.className = 'message-content loading-message';
         contentDiv.innerHTML = `
-            正在搜尋...
+            正在搜尋
             <div class="loading-dots">
                 <span></span>
                 <span></span>
@@ -317,9 +318,9 @@ class ChatApp {
         }
         
         // 9. 將 URL 轉換為可點擊的連結（放在最後以避免干擾其他格式）
-        const urlRegex = /(https?:\/\/[^\s<>\)]+)/g;
+        const urlRegex = /(https?:\/\/[^\s<>\)）]+)/g;
         processed = processed.replace(urlRegex, (url) => {
-            const cleanUrl = url.replace(/[.,;!?)]+$/, '');
+            const cleanUrl = url.replace(/[.,;!?)\)）]+$/, '');
             return `<a href="${cleanUrl}" class="notion-link" target="_blank">${cleanUrl}</a>`;
         });
         if (this.config.isDevelopment) {

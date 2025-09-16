@@ -292,7 +292,7 @@ notion-chat-app/
 - **搜尋範圍**: 僅支援頁面標題搜尋，不支援內容全文搜尋
 - **速率限制**: 每次請求間隔 350ms，避免觸發限制
 - **權限要求**: 需要正確的 Integration 設定和頁面存取權限
-- **回傳限制**: 每次搜尋最多回傳 10 個結果
+- **回傳限制**: 每次搜尋最多回傳 5 個結果 (AI篩選後)
 
 ### 🤖 Gemini AI 限制
 
@@ -378,7 +378,7 @@ search_modes: [1, 2, 3]  # rounds of search
 limitations:
   notion_api: "title_search_only"
   rate_limit: "350ms_between_requests"
-  max_results: 10
+  max_results: 5  # AI selected from up to 500 raw results (5 keywords × 100 each)
   content_depth: 3
 
 development_commands:

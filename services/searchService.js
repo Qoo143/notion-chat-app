@@ -75,12 +75,19 @@ class SearchService {
 
     // 所有輪次都沒有找到合適內容
     logger.warn(`❌ ${maxRounds}輪搜索都沒有找到合適的內容`);
-    return {
+    logger.debug(`🔍 準備生成失敗回應，rounds 數量: ${rounds.length}`);
+    
+    const failureResponse = this.generateFailureResponse(userMessage, rounds);
+    logger.debug(`🔍 失敗回應已生成，長度: ${failureResponse.length}`);
+    
+    const result = {
       success: false,
-      response: this.generateFailureResponse(userMessage, rounds),
+      response: failureResponse,
       foundPages: [],
       rounds: rounds
     };
+    logger.debug(`🔍 返回結果: ${JSON.stringify(result, null, 2)}`);
+    return result;
   }
 
   /**
@@ -219,7 +226,7 @@ class SearchService {
 
 請以JSON格式回覆：
 {
-  "keywords": ["優化關鍵詞1", "優化關鍵詞2", "優化關鍵詞3"]
+  "keywords": ["優化關鍵詞1", "優化關鍵詞2", "優化關鍵詞3", "優化關鍵詞4", "優化關鍵詞5"]
 }
 
 **標題導向優化策略：**
@@ -248,7 +255,7 @@ class SearchService {
 
 請以JSON格式回覆：
 {
-  "keywords": ["擴展關鍵詞1", "擴展關鍵詞2", "擴展關鍵詞3"]
+  "keywords": ["擴展關鍵詞1", "擴展關鍵詞2", "擴展關鍵詞3", "擴展關鍵詞4", "擴展關鍵詞5"]
 }
 
 **標題導向擴展策略：**
@@ -410,6 +417,7 @@ ${pageContents.map((page, index) => `
       pageContents.forEach((page, index) => {
         aggregatedContent += `=== 資料 ${index + 1}：${page.title} ===\n`;
         aggregatedContent += `網址：${page.url}\n`;
+        aggregatedContent += `頁面ID：${page.pageId}\n`;
         aggregatedContent += `內容：\n${page.content.substring(0, config.notion.content.maxPreviewLength)}${page.content.length > config.notion.content.maxPreviewLength ? '...' : ''}\n\n`;
       });
 

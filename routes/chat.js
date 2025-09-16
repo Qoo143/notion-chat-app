@@ -86,7 +86,7 @@ async function analyzeUserIntent(message, apiCounter) {
     請以JSON格式回覆:
     {
       "intentType": "greeting|search|chat",
-      "keywords": ["關鍵詞1", "關鍵詞2", "關鍵詞3"],
+      "keywords": ["關鍵詞1", "關鍵詞2", "關鍵詞3", "關鍵詞4", "關鍵詞5"],
       "confidence": 0.8
     }
 
@@ -95,7 +95,7 @@ async function analyzeUserIntent(message, apiCounter) {
     2. search: 想要搜尋/查找/找到特定資料（包含「找」、「搜尋」、「查」、「有沒有」等）
     3. chat: 一般對話或問答
 
-    如果是search意圖，請提供3個最適合的關鍵詞用於Notion頁面標題搜索。
+    如果是search意圖，請提供5個最適合的關鍵詞用於Notion頁面標題搜索。
 
     ⚠️ **重要:Notion API 搜尋限制**
     - 只搜尋頁面標題，不搜尋內容（部分匹配，最多100結果）
@@ -108,9 +108,9 @@ async function analyzeUserIntent(message, apiCounter) {
     - 避免複合描述詞（不要："原型繼承模式"，要："Prototype", "繼承"）
     
     💡 **範例**：
-    - 用戶問"javascript繼承" → ["JavaScript", "Inheritance", "繼承"]
-    - 用戶問"react hooks用法" → ["React", "Hooks", "Hook"]
-    - 用戶問"資料庫設計" → ["Database", "資料庫", "設計"]
+    - 用戶問"javascript繼承" → ["JavaScript", "Inheritance", "繼承", "JS", "prototype"]
+    - 用戶問"react hooks用法" → ["React", "Hooks", "Hook", "useState", "useEffect"]
+    - 用戶問"資料庫設計" → ["Database", "資料庫", "設計", "MySQL", "Schema"]
 
     只回覆JSON，不要其他文字。
     `;
