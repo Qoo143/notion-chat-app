@@ -144,7 +144,6 @@ class ChatApp {
                 // 如果有API統計資訊，添加到回覆末尾
                 if (data.apiStats) {
                     const stats = data.apiStats;
-                    messageContent += `\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
                     messageContent += `📊 **API 調用統計**\n`;
                     messageContent += `• Notion API: ${stats.notionCalls} 次\n`;
                     messageContent += `• Gemini AI: ${stats.geminiCalls} 次\n`;
