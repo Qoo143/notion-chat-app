@@ -264,15 +264,28 @@ class ChatApp {
             console.log('🔍 [DEBUG] 步驟2 - 換行處理後:', processed.substring(0, 200) + (processed.length > 200 ? '...' : ''));
         }
 
-        // 3. 處理 Markdown 語法
-        // 先處理內聯程式碼 `code` (要在粗體前處理，避免衝突)
-        processed = processed.replace(/`([^`]+)`/g, '<code class="inline-code">$1</code>');
-        
+        // 3. 處理 Markdown 語法 (採用網路最佳實踐：先保護程式碼區塊)
+        let codeBlocks = [];
+        let codeIndex = 0;
+
+        // 先提取並保護內聯程式碼
+        processed = processed.replace(/`([^`]+)`/g, (match, code) => {
+            const placeholder = `__CODE_BLOCK_${codeIndex}__`;
+            codeBlocks[codeIndex] = `<code class="inline-code">${code}</code>`;
+            codeIndex++;
+            return placeholder;
+        });
+
         // 處理粗體 **text**
         processed = processed.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-        
-        // 處理斜體 *text* (要在粗體後處理，避免衝突，但避免處理程式碼中的單一星號)
-        processed = processed.replace(/\*([^*<>`]+)\*/g, '<em>$1</em>');
+
+        // 處理斜體 *text* (現在安全了，因為程式碼已被保護)
+        processed = processed.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+
+        // 還原程式碼區塊
+        codeBlocks.forEach((codeBlock, index) => {
+            processed = processed.replace(`__CODE_BLOCK_${index}__`, codeBlock);
+        });
         
         if (this.config.isDevelopment) {
             console.log('🔍 [DEBUG] 步驟3 - Markdown 語法處理後:', processed.substring(0, 200) + (processed.length > 200 ? '...' : ''));
