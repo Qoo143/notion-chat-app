@@ -45,7 +45,7 @@ class ChatApp {
         this.updateStatus('connecting', '檢查連線...');
         
         try {
-            const healthUrl = `${this.config.apiBaseUrl}/api/health`;
+            const healthUrl = `${this.config.apiBaseUrl}/api/system/health`;
             if (this.config.isDevelopment) {
                 console.log('檢查伺服器狀態:', healthUrl);
             }
@@ -376,19 +376,9 @@ class ChatApp {
         const welcomeOverlay = document.getElementById('welcomeOverlay');
         const closeButton = document.getElementById('closeWelcome');
         const startButton = document.getElementById('startChatting');
-        const exampleQueries = document.querySelectorAll('.example-query');
 
-        // 檢查是否是首次訪問
-        const hasVisited = localStorage.getItem('notion-chat-visited');
-        if (!hasVisited) {
-            // 延遲顯示彈窗，確保頁面完全載入
-            setTimeout(() => {
-                welcomeOverlay.classList.add('show');
-            }, 500);
-        } else {
-            // 如果已經訪問過，直接聚焦輸入框
-            this.messageInput.focus();
-        }
+        // 每次都顯示彈窗
+        welcomeOverlay.classList.add('show');
 
         // 關閉按鈕事件
         closeButton.addEventListener('click', () => {
@@ -413,27 +403,11 @@ class ChatApp {
                 this.closeWelcomeModal();
             }
         });
-
-        // 範例查詢點擊事件
-        exampleQueries.forEach(button => {
-            button.addEventListener('click', () => {
-                const query = button.getAttribute('data-query');
-                this.messageInput.value = query;
-                this.closeWelcomeModal();
-                // 自動發送查詢
-                setTimeout(() => {
-                    this.sendMessage();
-                }, 300);
-            });
-        });
     }
 
     closeWelcomeModal() {
         const welcomeOverlay = document.getElementById('welcomeOverlay');
         welcomeOverlay.classList.remove('show');
-
-        // 標記已訪問
-        localStorage.setItem('notion-chat-visited', 'true');
 
         // 聚焦輸入框
         setTimeout(() => {

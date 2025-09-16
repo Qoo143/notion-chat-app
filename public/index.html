@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Notion 聊天助手</title>
     <link rel="stylesheet" href="css/styles.css">
 </head>
+
 <body>
     <div class="chat-container">
         <div class="chat-header">
@@ -26,7 +28,7 @@
                 <span id="statusText">準備就緒</span>
             </div>
         </div>
-        
+
         <div class="chat-messages" id="chatMessages">
             <div class="message bot-message">
                 <div class="message-content">
@@ -35,18 +37,13 @@
                 <div class="message-time" id="welcomeTime"></div>
             </div>
         </div>
-        
+
         <div class="chat-input-container">
             <div class="input-wrapper">
-                <input 
-                    type="text" 
-                    id="messageInput" 
-                    placeholder="輸入您的問題..."
-                    autocomplete="off"
-                >
+                <input type="text" id="messageInput" placeholder="輸入您的問題..." autocomplete="off">
                 <button id="sendButton" class="send-button">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                        <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" fill="currentColor"/>
+                        <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" fill="currentColor" />
                     </svg>
                 </button>
             </div>
@@ -57,58 +54,22 @@
     <div class="welcome-overlay" id="welcomeOverlay">
         <div class="welcome-modal">
             <div class="welcome-header">
-                <h2>👋 歡迎使用 Notion 聊天助手</h2>
+                <h2>歡迎使用 Notion 聊天助手</h2>
                 <button class="close-button" id="closeWelcome" aria-label="關閉彈窗">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                        <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
                     </svg>
                 </button>
             </div>
 
             <div class="welcome-content">
-                <div class="welcome-intro">
-                    <p>🤖 我是您的智慧搜尋助手，可以幫您快速找到 Notion 工作區中的筆記和資料！</p>
-                </div>
-
-                <div class="welcome-features">
-                    <h3>✨ 我能為您做什麼：</h3>
-                    <ul>
-                        <li>
-                            <span class="feature-icon">🔍</span>
-                            <strong>智慧搜尋</strong> - 用自然語言搜尋您的 Notion 筆記
-                        </li>
-                        <li>
-                            <span class="feature-icon">🧠</span>
-                            <strong>AI 分析</strong> - 自動分析並整理相關資料
-                        </li>
-                        <li>
-                            <span class="feature-icon">📚</span>
-                            <strong>深度整合</strong> - 提供完整的頁面內容和直接連結
-                        </li>
-                        <li>
-                            <span class="feature-icon">⚡</span>
-                            <strong>多種模式</strong> - 選擇快速、平衡或精確搜尋模式
-                        </li>
-                    </ul>
-                </div>
-
-                <div class="welcome-examples">
-                    <h3>💬 試試看這些問題：</h3>
-                    <div class="example-queries">
-                        <button class="example-query" data-query="找一下 JavaScript 相關的筆記">
-                            "找一下 JavaScript 相關的筆記"
-                        </button>
-                        <button class="example-query" data-query="有沒有專案管理的文件？">
-                            "有沒有專案管理的文件？"
-                        </button>
-                        <button class="example-query" data-query="幫我查找會議記錄">
-                            "幫我查找會議記錄"
-                        </button>
-                    </div>
-                </div>
+                <!-- <p>我是您的智慧搜尋助手</p> -->
+                <p>可以使用關鍵字搜索 Notion 工作區中的筆記和資料</p>
+                <p>根據該日api呼叫次數</p>
+                <p>搜尋時間約需 30~120 秒請耐心等候</p>
 
                 <div class="welcome-footer">
-                    <button class="start-button" id="startChatting">開始對話 🚀</button>
+                    <button class="start-button" id="startChatting">確認</button>
                 </div>
             </div>
         </div>
@@ -117,4 +78,5 @@
     <script src="https://unpkg.com/axios@1.6.0/dist/axios.min.js"></script>
     <script src="js/app.js"></script>
 </body>
+
 </html>

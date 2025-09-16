@@ -19,8 +19,13 @@ router.post('/', asyncHandler(async (req, res) => {
   try {
     const { message, maxRounds = 1 } = req.body;
 
+    // 輸入驗證
     if (!message?.trim()) {
       return res.status(400).json({ error: '訊息內容不能為空' });
+    }
+
+    if (message.length > 1000) {
+      return res.status(400).json({ error: '訊息長度不能超過 1000 字符' });
     }
 
     logger.info(`接收到用戶訊息: ${message}（搜索模式: ${maxRounds}輪）`);
