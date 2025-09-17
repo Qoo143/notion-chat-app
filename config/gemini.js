@@ -1,7 +1,7 @@
 // Gemini AI 配置
 module.exports = {
   // 模型設定
-  model: "gemini-1.5-flash",
+  model: "gemini-2.5-flash",
   
   // API Key 管理
   apiKeys: {
@@ -20,3 +20,8 @@ module.exports = {
     }
   }
 };
+
+//  Geminitoken消耗預估
+//  1. 選擇階段：100-200 個標題 ≈ 2-3K tokens
+//  2. 評估階段：5 頁面 × 8000 字元 ≈ 15-20K tokens
+//  3. 最終回覆：同樣的 15-20K tokens

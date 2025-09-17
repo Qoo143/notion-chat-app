@@ -369,16 +369,6 @@ body {
     }
 }
 
-.message-time {
-    font-size: 0.75em;
-    color: $stone-gray;
-    margin-top: 5px;
-    text-align: right;
-
-    .bot-message & {
-        text-align: left;
-    }
-}
 
 @keyframes slideIn {
     from {
@@ -761,6 +751,7 @@ body {
 
 .welcome-footer {
     text-align: center;
+    margin-top: 30px;
 
     .start-button {
         background: linear-gradient(135deg, $primary-brown 0%, $accent-terracotta 100%);

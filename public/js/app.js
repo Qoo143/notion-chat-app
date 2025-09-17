@@ -18,8 +18,6 @@ class ChatApp {
 
     async init() {
 
-        // 設置歡迎訊息時間
-        document.getElementById('welcomeTime').textContent = this.formatTime(new Date());
 
         // 綁定事件監聽器
         this.sendButton.addEventListener('click', () => this.sendMessage());
@@ -206,12 +204,7 @@ class ChatApp {
         const processedContent = this.processLinks(content);
         contentDiv.innerHTML = processedContent;
         
-        const timeDiv = document.createElement('div');
-        timeDiv.className = 'message-time';
-        timeDiv.textContent = this.formatTime(new Date());
-        
         messageDiv.appendChild(contentDiv);
-        messageDiv.appendChild(timeDiv);
         
         this.chatMessages.appendChild(messageDiv);
         this.scrollToBottom();
@@ -359,12 +352,6 @@ class ChatApp {
         this.searchModeSelect.disabled = !enabled;
     }
 
-    formatTime(date) {
-        return date.toLocaleTimeString('zh-TW', {
-            hour: '2-digit',
-            minute: '2-digit'
-        });
-    }
 
     scrollToBottom() {
         setTimeout(() => {
